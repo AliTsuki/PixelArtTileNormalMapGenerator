@@ -14,17 +14,28 @@ namespace PixelArtTileNormalMapGenerator
 {
     public partial class NormalMapGeneratorForm : Form
     {
+        // Path
         private static string DefaultNormalMapImageDirectoryPath = Application.StartupPath + "\\DefaultNormal\\";
         private static string DefaultNormalMapImageName = "DefaultNormal.png";
+        // Bitmaps
         private static Bitmap OriginalImageBitmap;
         private static Bitmap NormalMapDefaultImageBitmap;
         private static Bitmap NormalMapImageBitmap;
-        private static Color NormalMapBackgroundDefaultColor;
+        // Colors
+        private static Color NormalMapDefaultBGColor;
         private static Color IgnoreColor;
         private static Color BackgroundColor;
         private static Color SeparatorColor;
         private static Color IndividualColor;
+        // Difference checks
+        private static int IgnoreColorMaxDifference;
+        private static int BackgroundColorMaxDifference;
+        private static int SeparatorColorMaxDifference;
+        private static int IndividualColorMaxDifference;
+        // Lists
+        private static List<TileObject> tileObjects = new List<TileObject>();
 
+        // Default constructor
         public NormalMapGeneratorForm()
         {
             this.InitializeComponent();
@@ -54,13 +65,15 @@ namespace PixelArtTileNormalMapGenerator
 
         private void InitializeValues()
         {
-            LoadDefaultNormal();
+            this.LoadDefaultNormal();
             OriginalImageBitmap = null;
             NormalMapImageBitmap = null;
+            NormalMapDefaultBGColor = Color.FromArgb(255, 118, 137, 249);
             IgnoreColor = Color.White;
             BackgroundColor = Color.White;
             SeparatorColor = Color.White;
             IndividualColor = Color.White;
+            tileObjects.Clear();
         }
 
         private void LoadImageButton_Click(object sender, EventArgs args)
@@ -72,6 +85,7 @@ namespace PixelArtTileNormalMapGenerator
                 {
                     OriginalImageBitmap = new Bitmap(this.OpenFileDialog.FileName);
                     this.OriginalImagePreviewBox.Image = OriginalImageBitmap;
+                    this.OriginalImagePreviewBox.SizeMode = PictureBoxSizeMode.StretchImage;
                 }
                 catch(Exception)
                 {
@@ -92,23 +106,32 @@ namespace PixelArtTileNormalMapGenerator
 
         private void SelectBackgroundColorButton_Click(object sender, EventArgs args)
         {
-            this.BackgroundColorDialog.ShowDialog();
-            BackgroundColor = this.BackgroundColorDialog.Color;
-            this.BackgroundColorBox.BackColor = BackgroundColor;
+            DialogResult result = this.BackgroundColorDialog.ShowDialog();
+            if(result == DialogResult.OK)
+            {
+                BackgroundColor = this.BackgroundColorDialog.Color;
+                this.BackgroundColorBox.BackColor = BackgroundColor;
+            }
         }
 
         private void SelectSeparatorColorButton_Click(object sender, EventArgs args)
         {
-            this.SeparatorColorDialog.ShowDialog();
-            SeparatorColor = this.SeparatorColorDialog.Color;
-            this.SeparatorColorBox.BackColor = SeparatorColor;
+            DialogResult result = this.SeparatorColorDialog.ShowDialog();
+            if(result == DialogResult.OK)
+            {
+                SeparatorColor = this.SeparatorColorDialog.Color;
+                this.SeparatorColorBox.BackColor = SeparatorColor;
+            }
         }
 
         private void SelectIndividualColorButton_Click(object sender, EventArgs args)
         {
-            this.IndividualColorDialog.ShowDialog();
-            IndividualColor = this.IndividualColorDialog.Color;
-            this.IndividualColorBox.BackColor = IndividualColor;
+            DialogResult result = this.IndividualColorDialog.ShowDialog();
+            if(result == DialogResult.OK)
+            {
+                IndividualColor = this.IndividualColorDialog.Color;
+                this.IndividualColorBox.BackColor = IndividualColor;
+            }
         }
 
         private void GenerateNormalMapButton_Click(object sender, EventArgs args)
@@ -117,6 +140,10 @@ namespace PixelArtTileNormalMapGenerator
             {
                 NormalMapImageBitmap = new Bitmap(OriginalImageBitmap.Width, OriginalImageBitmap.Height);
                 this.CreateNormalMap();
+            }
+            else
+            {
+                MessageBox.Show($@"No image loaded!{Environment.NewLine}Please load an image first.");
             }
         }
 
@@ -136,12 +163,12 @@ namespace PixelArtTileNormalMapGenerator
                 else
                 {
                     Directory.CreateDirectory(DefaultNormalMapImageDirectoryPath);
-                    throw new Exception("Default Normal Map Image Directory did not exist! Creating Directory!");
+                    throw new Exception("Default Normal Map Image Directory did not exist! Creating Directory now!");
                 }
             }
             catch(Exception)
             {
-                MessageBox.Show($@"Error reading default normal map!{Environment.NewLine}Has the image been moved or deleted?{Environment.NewLine}Please restore the default normal map image to \DefaultNormal\DefaultNormal.PNG and press the RESET button to continue.");
+                MessageBox.Show($@"Error reading default normal map!{Environment.NewLine}Has the image been moved or deleted?{Environment.NewLine}Please restore the default normal map image to \DefaultNormal\DefaultNormal.png and press the RESET button to continue.");
             }
         }
 
@@ -154,24 +181,31 @@ namespace PixelArtTileNormalMapGenerator
                     for(int y = 0; y < OriginalImageBitmap.Height; y++)
                     {
                         Color currentPixelColor = OriginalImageBitmap.GetPixel(x, y);
-                        if(currentPixelColor == IgnoreColor)
+                        if(this.GetColorDistance(currentPixelColor, IgnoreColor) <= IgnoreColorMaxDifference)
                         {
                             break;
                         }
-                        else if(currentPixelColor == BackgroundColor)
+                        else if(this.GetColorDistance(currentPixelColor, BackgroundColor) <= BackgroundColorMaxDifference)
                         {
-                            NormalMapImageBitmap.SetPixel(x, y, NormalMapBackgroundDefaultColor);
+                            NormalMapImageBitmap.SetPixel(x, y, NormalMapDefaultBGColor);
                         }
-                        else if(currentPixelColor == SeparatorColor)
+                        else if(this.GetColorDistance(currentPixelColor, SeparatorColor) <= SeparatorColorMaxDifference)
                         {
 
+                            /* TODO: Try to find a nearby individual color pixel, if so and individual color pixel does not belong to another tileobject, 
+                             * create a new tileobject, add this pixel to edges, flood fill to find all individual colored pixels, stop at other separator color pixels, 
+                             * add all individual and separator pixels to respective lists, once done, get dimensions of shape, get scale of shape in comparison
+                             * to default normal map image, combine all edge and individual pixels into one list, get color for each pixel from default
+                             * normal map image using scale and relative location, write all pixel colors to new normal map image bitmap using pixel coords
+                            */
                         }
-                        else if(currentPixelColor == IndividualColor)
+                        else if(this.GetColorDistance(currentPixelColor, IndividualColor) <= IndividualColorMaxDifference)
                         {
-
+                            // Same as above mostly
                         }
                     }
                 }
+                // After looping through all pixels of original image, all tile objects should be created, so write final normal map image
             }
             catch(Exception e)
             {
@@ -181,12 +215,58 @@ namespace PixelArtTileNormalMapGenerator
 
         private int GetColorDistance(Color currentColor, Color colorToCheckAgainst)
         {
-            return 0;
+            int distance = Math.Abs(currentColor.R - colorToCheckAgainst.R) + Math.Abs(currentColor.G - colorToCheckAgainst.G) + Math.Abs(currentColor.B - colorToCheckAgainst.B) + Math.Abs(currentColor.A - colorToCheckAgainst.A);
+            return distance;
         }
     }
 
+    // TODO: come up with a better name than TileObjects, yuck
     public class TileObject
     {
+        public List<Vector2> EdgePixels { get; private set; }
+        public List<Vector2> IndividualPixels { get; private set; }
+        public int Width { get; private set; }
+        public int Height { get; private set; }
+        public int ScaleVsDefault { get; private set; }
 
+        public void AddNewEdgePixel(int x, int y)
+        {
+            this.EdgePixels.Add(new Vector2(x, y));
+        }
+
+        public void AddNewIndividualPixel(int x, int y)
+        {
+            this.IndividualPixels.Add(new Vector2(x, y));
+        }
+
+        public void GetTotalDimensions()
+        {
+            // TODO: Get lowest x, highest x, lowest y, highest y, set width to highest x minus lowest x, height to highest y minus lowest y, get scale compared to default normal map image
+        }
+
+        public bool DoesPixelExistInThisObject(int x, int y)
+        {
+            List<Vector2> allPixels = this.EdgePixels.Concat(this.IndividualPixels).ToList();
+            foreach(Vector2 pixel in allPixels)
+            {
+                if(pixel.X == x && pixel.Y == y)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    public struct Vector2
+    {
+        public int X;
+        public int Y;
+
+        public Vector2(int x, int y)
+        {
+            this.X = x;
+            this.Y = y;
+        }
     }
 }
