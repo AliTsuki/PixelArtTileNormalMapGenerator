@@ -1,68 +1,65 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace PixelArtTileNormalMapGenerator
 {
+    /// <summary>
+    /// Class specifying the behaviour of the Normal Map Generator Form.
+    /// </summary>
     public partial class NormalMapGeneratorForm : Form
     {
         // Path
         private string DefaultNormalMapImageDirectoryPath = Application.StartupPath + "\\DefaultNormal\\";
         private static string DefaultNormalMapImageName = "DefaultNormal.png";
         // Bitmaps
-        public Bitmap OriginalImageBitmap;
-        public Bitmap NormalMapDefaultImageBitmap;
-        public Bitmap NormalMapImageBitmap;
+        private Bitmap OriginalImageBitmap;
+        private Bitmap NormalMapDefaultImageBitmap;
+        private Bitmap NormalMapImageBitmap;
         // Colors
-        public Color NormalMapDefaultBGColor;
-        public Color IgnoreColor;
-        public Color BackgroundColor;
-        public Color SeparatorColor;
-        public Color IndividualColor;
+        private Color NormalMapDefaultBGColor;
+        private Color IgnoreColor;
+        private Color BackgroundColor;
+        private Color SeparatorColor;
+        private Color IndividualColor;
         // Difference checks
-        public int IgnoreColorMaxDifference;
-        public int BackgroundColorMaxDifference;
-        public int SeparatorColorMaxDifference;
-        public int IndividualColorMaxDifference;
+        private int IgnoreColorMaxDifference;
+        private int BackgroundColorMaxDifference;
+        private int SeparatorColorMaxDifference;
+        private int IndividualColorMaxDifference;
         // Lists
         private static List<TileObject> tileObjects = new List<TileObject>();
+        // Enum
+        private enum ColorType
+        {
+            Separator,
+            Individual
+        }
 
-        // Default constructor
+        /// <summary>
+        /// Default constructor.
+        /// </summary>
         public NormalMapGeneratorForm()
         {
             this.InitializeComponent();
         }
 
-        // Set default values
-        // On Load Image button clicked select image from disk
-        // Load image into memory
-        // Show image in preview box
-        // Save selected colors, Ignore, background, separator, individual
-        // On Generate Normal Map button clicked, generate new image, same size as original, go through each pixel in image
-        // -ignore ignore colors, turn background colors into normal bluish color, on separator color create new tile object
-        // -store pixel location, do recursive flood fill, check against pixels already added, check all nearby pixels
-        // -if they are individual color add them to object, if separator color, add to object in separate list and don't seek farther
-        // -in that direction. Upon completion of flood fill, add separator list to individual list, get width and height of individual tile object
-        // -get scale difference between object and normal map default texture provided, for each pixel in object, translate to pixel location in
-        // -normal map default, use scale also to determin how many pixels would be averaged in shrinking, grab all pixels around selected in normal default,
-        // -average them to get final value to be assigned to pixel of object, loop through all objects like that, once all objects are instantiated and have
-        // - their colors selected, go through new blank normal map image and place all the pixels in place
-        // Show normal map in preview box
-        // On Save Normal Map button clicked, save normal map image as png in same path as original image
-        // On Reset button clicked, clear all saved colors and images
+        /// <summary>
+        /// Loads the normal map generator form.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void NormalMapGeneratorForm_Load(object sender, EventArgs args)
         {
             this.InitializeValues();
         }
 
+        /// <summary>
+        /// Initialize colors and bitmap images to default values.
+        /// </summary>
         private void InitializeValues()
         {
             this.LoadDefaultNormal();
@@ -76,6 +73,11 @@ namespace PixelArtTileNormalMapGenerator
             tileObjects.Clear();
         }
 
+        /// <summary>
+        /// Opens a file select dialog, selected image is read to bitmap and shown in original image preview box.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void LoadImageButton_Click(object sender, EventArgs args)
         {
             DialogResult result = this.OpenFileDialog.ShowDialog();
@@ -94,6 +96,13 @@ namespace PixelArtTileNormalMapGenerator
             }
         }
 
+        // TODO: maybe get rid of ignore color, create a better interface to get color values, add a dropper tool to select color from loaded image
+
+        /// <summary>
+        /// Opens a color select dialog box for ignore color.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void IgnoreColorDialogButton_Click(object sender, EventArgs args)
         {
             DialogResult result = this.IgnoreColorDialog.ShowDialog();
@@ -104,6 +113,11 @@ namespace PixelArtTileNormalMapGenerator
             }
         }
 
+        /// <summary>
+        /// Opens a color select dialog box for background color.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void SelectBackgroundColorButton_Click(object sender, EventArgs args)
         {
             DialogResult result = this.BackgroundColorDialog.ShowDialog();
@@ -114,6 +128,11 @@ namespace PixelArtTileNormalMapGenerator
             }
         }
 
+        /// <summary>
+        /// Opens a color select dialog box for separator color.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void SelectSeparatorColorButton_Click(object sender, EventArgs args)
         {
             DialogResult result = this.SeparatorColorDialog.ShowDialog();
@@ -124,6 +143,11 @@ namespace PixelArtTileNormalMapGenerator
             }
         }
 
+        /// <summary>
+        /// Opens a color select dialog box for individual color.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void SelectIndividualColorButton_Click(object sender, EventArgs args)
         {
             DialogResult result = this.IndividualColorDialog.ShowDialog();
@@ -134,12 +158,18 @@ namespace PixelArtTileNormalMapGenerator
             }
         }
 
+        /// <summary>
+        /// Starts the normal map generation process and displays created normal map to normal map preview box.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void GenerateNormalMapButton_Click(object sender, EventArgs args)
         {
             if(this.OriginalImageBitmap != null)
             {
                 this.NormalMapImageBitmap = new Bitmap(this.OriginalImageBitmap.Width, this.OriginalImageBitmap.Height);
                 this.CreateNormalMap();
+                this.NormalMapImagePreviewBox.Image = this.NormalMapImageBitmap;
             }
             else
             {
@@ -147,11 +177,19 @@ namespace PixelArtTileNormalMapGenerator
             }
         }
 
+        /// <summary>
+        /// Runs initialize values method.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void ResetButton_Click(object sender, EventArgs args)
         {
             this.InitializeValues();
         }
 
+        /// <summary>
+        /// Loads the default normal map texture as bitmap.
+        /// </summary>
         private void LoadDefaultNormal()
         {
             try
@@ -172,6 +210,9 @@ namespace PixelArtTileNormalMapGenerator
             }
         }
 
+        /// <summary>
+        /// Creates a normal map from an original image using the selected colors to traverse.
+        /// </summary>
         private void CreateNormalMap()
         {
             try
@@ -181,22 +222,23 @@ namespace PixelArtTileNormalMapGenerator
                     for(int y = 0; y < this.OriginalImageBitmap.Height; y++)
                     {
                         Color currentPixelColor = this.OriginalImageBitmap.GetPixel(x, y);
-                        if(GetColorDistance(currentPixelColor, this.BackgroundColor) <= this.BackgroundColorMaxDifference)
+                        if(this.GetColorDistance(currentPixelColor, this.BackgroundColor) <= this.BackgroundColorMaxDifference)
                         {
                             this.NormalMapImageBitmap.SetPixel(x, y, this.NormalMapDefaultBGColor);
                         }
-                        else if(GetColorDistance(currentPixelColor, this.IndividualColor) <= this.IndividualColorMaxDifference)
+                        else if(this.GetColorDistance(currentPixelColor, this.IndividualColor) <= this.IndividualColorMaxDifference)
                         {
-                            if(HasPixelAlreadyBeenAdded(x, y) == false)
+                            if(this.HasPixelAlreadyBeenAdded(x, y) == false)
                             {
-                                TileObject newTileObject = new TileObject(this);
-                                newTileObject.AddNewIndividualPixel(x, y);
-                                newTileObject.FloodFill(x, y);
+                                TileObject newTileObject = new TileObject();
+                                tileObjects.Add(newTileObject);
+                                this.CheckAdjacentPixels(x, y, newTileObject);
+                                this.FloodFill(newTileObject);
+                                this.CreateNormalMapForTileObject(newTileObject);
                             }
                         }
                     }
                 }
-                // After looping through all pixels of original image, all tile objects should be created, so write final normal map image
             }
             catch(Exception e)
             {
@@ -204,13 +246,13 @@ namespace PixelArtTileNormalMapGenerator
             }
         }
 
-        public static int GetColorDistance(Color currentColor, Color colorToCheckAgainst)
-        {
-            int distance = Math.Abs(currentColor.R - colorToCheckAgainst.R) + Math.Abs(currentColor.G - colorToCheckAgainst.G) + Math.Abs(currentColor.B - colorToCheckAgainst.B) + Math.Abs(currentColor.A - colorToCheckAgainst.A);
-            return distance;
-        }
-
-        private static bool HasPixelAlreadyBeenAdded(int x, int y)
+        /// <summary>
+        /// Checks if a pixel coordinate has already been added to a TileObject.
+        /// </summary>
+        /// <param name="x">X coordinate of pixel.</param>
+        /// <param name="y">Y coordinate of pixel.</param>
+        /// <returns>Returns true if pixel coords have already been added to a Tile Object.</returns>
+        private bool HasPixelAlreadyBeenAdded(int x, int y)
         {
             foreach(TileObject tileObject in tileObjects)
             {
@@ -222,7 +264,12 @@ namespace PixelArtTileNormalMapGenerator
             return false;
         }
 
-        public bool IsPixelWithinBounds(Vector2 xy)
+        /// <summary>
+        /// Checks if a pixel coordinate is within the bounds of the original image.
+        /// </summary>
+        /// <param name="xy">Vector2 pixel coordinates.</param>
+        /// <returns>Returns true if pixel coordinates are within the bounds of the original image.</returns>
+        private bool IsPixelWithinBounds(Vector2 xy)
         {
             if(xy.X >= 0 && xy.X < this.OriginalImageBitmap.Width && xy.Y >= 0 && xy.Y < this.OriginalImageBitmap.Height)
             {
@@ -230,23 +277,129 @@ namespace PixelArtTileNormalMapGenerator
             }
             return false;
         }
+
+        /// <summary>
+        /// Checks the difference between two colors as an integer.
+        /// </summary>
+        /// <param name="currentColor">The color to check.</param>
+        /// <param name="colorToCheckAgainst">The color to measure against.</param>
+        /// <returns>Returns an integer denoting the amount of difference between 2 colors. Increasing values mean increasingly different.</returns>
+        private int GetColorDistance(Color currentColor, Color colorToCheckAgainst)
+        {
+            int distance = Math.Abs(currentColor.R - colorToCheckAgainst.R) + Math.Abs(currentColor.G - colorToCheckAgainst.G) + Math.Abs(currentColor.B - colorToCheckAgainst.B) + Math.Abs(currentColor.A - colorToCheckAgainst.A);
+            return distance;
+        }
+
+        /// <summary>
+        /// Checks if a specified pixel, by coordinate, has a color that is within the specified distance of a given color type.
+        /// </summary>
+        /// <param name="xy">Vector2 pixel coordinates.</param>
+        /// <param name="colorType">Color type: Separator, Individual</param>
+        /// <returns>Returns true if the pixel's color is within the maximum allowed color difference.</returns>
+        private bool IsColorWithinColorDistance(Vector2 xy, ColorType colorType)
+        {
+            if(colorType == ColorType.Individual)
+            {
+                if(this.GetColorDistance(this.OriginalImageBitmap.GetPixel(xy.X, xy.Y), this.IndividualColor) <= this.IndividualColorMaxDifference)
+                {
+                    return true;
+                }
+                return false;
+            }
+            else if(colorType == ColorType.Separator)
+            {
+                if(this.GetColorDistance(this.OriginalImageBitmap.GetPixel(xy.X, xy.Y), this.SeparatorColor) <= this.SeparatorColorMaxDifference)
+                {
+                    return true;
+                }
+                return false;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Adds pixels adjacent to the one specified to the list of pixels needing to be checked if they meet the criteria. Used by flood fill.
+        /// </summary>
+        /// <param name="x">X coordinate of pixel.</param>
+        /// <param name="y">Y coordinate of pixel.</param>
+        /// <param name="tileObject">Tile Object the parent pixel belongs to.</param>
+        private void CheckAdjacentPixels(int x, int y, TileObject tileObject)
+        {
+            tileObject.AddNewIndividualPixel(new Vector2(x, y));
+            tileObject.AddPixelAlreadyChecked(new Vector2(x, y));
+            Vector2[] adjacentPixelCoords = new Vector2[4]
+            {
+                new Vector2(x + 1, y),
+                new Vector2(x - 1, y),
+                new Vector2(x, y + 1),
+                new Vector2(x, y - 1)
+            };
+            for(int i = 0; i < adjacentPixelCoords.Length; i++)
+            {
+                if(this.IsPixelWithinBounds(adjacentPixelCoords[i]) && this.IsColorWithinColorDistance(adjacentPixelCoords[i], ColorType.Individual) && tileObject.PixelsAlreadyChecked.Contains(adjacentPixelCoords[i]) == false)
+                {
+                    tileObject.AddPixelToCheck(adjacentPixelCoords[i]);
+                }
+                else if(this.IsPixelWithinBounds(adjacentPixelCoords[i]) && this.IsColorWithinColorDistance(adjacentPixelCoords[i], ColorType.Separator) && tileObject.PixelsAlreadyChecked.Contains(adjacentPixelCoords[i]) == false)
+                {
+                    tileObject.AddNewEdgePixel(adjacentPixelCoords[i]);
+                    tileObject.AddPixelAlreadyChecked(adjacentPixelCoords[i]);
+                }
+                else
+                {
+                    tileObject.AddPixelAlreadyChecked(adjacentPixelCoords[i]);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Runs the check adjacent pixels method on each pixel that needs to be checked. Works recursively to find all adjacent pixels for a tile object.
+        /// </summary>
+        /// <param name="tileObject">Tile Object the parent pixel belongs to.</param>
+        private void FloodFill(TileObject tileObject)
+        {
+            while(tileObject.PixelsToCheck.Count > 0)
+            {
+                List<Vector2> currentPixelsToCheck = tileObject.PixelsToCheck.ToList();
+                tileObject.ClearPixelsToCheck();
+                foreach(Vector2 pixel in currentPixelsToCheck)
+                {
+                    this.CheckAdjacentPixels(pixel.X, pixel.Y, tileObject);
+                }
+            }
+            tileObject.ClearPixelsToCheck();
+            tileObject.ClearPixelsAlreadyChecked();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tileObject">Tile Object the parent pixel belongs to.</param>
+        private void CreateNormalMapForTileObject(TileObject tileObject)
+        {
+            // TODO: Translate normal map color from default normal map by scale to current normal map and add the pixels to bitmap
+        }
     }
 
     // TODO: come up with a better name than TileObjects, yuck
+    /// <summary>
+    /// Class representing a connected group of pixels of varied shape.
+    /// </summary>
     public class TileObject
     {
-        public static NormalMapGeneratorForm NMG;
         public List<Vector2> EdgePixels { get; private set; }
         public List<Vector2> IndividualPixels { get; private set; }
         public int Width { get; private set; }
         public int Height { get; private set; }
         public int ScaleVsDefault { get; private set; }
-        private List<Vector2> PixelsAlreadyChecked;
-        private List<Vector2> PixelsToCheck;
+        public List<Vector2> PixelsAlreadyChecked { get; private set; }
+        public List<Vector2> PixelsToCheck { get; private set; }
 
-        public TileObject(NormalMapGeneratorForm nmg)
+        /// <summary>
+        /// Default constructor.
+        /// </summary>
+        public TileObject()
         {
-            NMG = nmg;
             this.EdgePixels = new List<Vector2>();
             this.IndividualPixels = new List<Vector2>();
             this.Width = 0;
@@ -256,21 +409,72 @@ namespace PixelArtTileNormalMapGenerator
             this.PixelsToCheck = new List<Vector2>();
         }
 
-        public void AddNewEdgePixel(int x, int y)
+        /// <summary>
+        /// Adds a set of pixel coordinates to the Edge Pixels list.
+        /// </summary>
+        /// <param name="xy">Vector2 pixel coordinates.</param>
+        public void AddNewEdgePixel(Vector2 xy)
         {
-            this.EdgePixels.Add(new Vector2(x, y));
+            this.EdgePixels.Add(xy);
         }
 
-        public void AddNewIndividualPixel(int x, int y)
+        /// <summary>
+        /// Adds a set of pixel coordinates to the Individual Pixels list.
+        /// </summary>
+        /// <param name="xy">Vector2 pixel coordinates.</param>
+        public void AddNewIndividualPixel(Vector2 xy)
         {
-            this.IndividualPixels.Add(new Vector2(x, y));
+            this.IndividualPixels.Add(xy);
         }
 
+        /// <summary>
+        /// Adds a set of pixel coordinates to the Pixels To Check list.
+        /// </summary>
+        /// <param name="xy">Vector2 pixel coordinates.</param>
+        public void AddPixelToCheck(Vector2 xy)
+        {
+            this.PixelsToCheck.Add(xy);
+        }
+
+        /// <summary>
+        /// Adds a set of pixel coordinates to the Pixels Already Checked list.
+        /// </summary>
+        /// <param name="xy">Vector2 pixel coordinates.</param>
+        public void AddPixelAlreadyChecked(Vector2 xy)
+        {
+            this.PixelsAlreadyChecked.Add(xy);
+        }
+
+        /// <summary>
+        /// Clears the Pixels To Check list.
+        /// </summary>
+        public void ClearPixelsToCheck()
+        {
+            this.PixelsToCheck.Clear();
+        }
+
+        /// <summary>
+        /// Clears the Pixels Already Checked list.
+        /// </summary>
+        public void ClearPixelsAlreadyChecked()
+        {
+            this.PixelsAlreadyChecked.Clear();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public void GetTotalDimensions()
         {
             // TODO: Get lowest x, highest x, lowest y, highest y, set width to highest x minus lowest x, height to highest y minus lowest y, get scale compared to default normal map image
         }
 
+        /// <summary>
+        /// Checks if a given set of pixel coordinates has been added to either the Edge Pixels or Individual Pixels lists of this object.
+        /// </summary>
+        /// <param name="x">X coordinate of pixel.</param>
+        /// <param name="y">Y coordinate of pixel.</param>
+        /// <returns>Returns true if the specified pixel exists in the lists of this object.</returns>
         public bool DoesPixelExistInThisObject(int x, int y)
         {
             List<Vector2> allPixels = this.EdgePixels.Concat(this.IndividualPixels).ToList();
@@ -283,36 +487,11 @@ namespace PixelArtTileNormalMapGenerator
             }
             return false;
         }
-
-        public void FloodFill(int x, int y)
-        {
-            /* TODO: Try to find a nearby individual color pixel, if so and individual color pixel does not belong to another tileobject, 
-             * create a new tileobject, add this pixel to edges, flood fill to find all individual colored pixels, stop at other separator color pixels, 
-             * add all individual and separator pixels to respective lists, once done, get dimensions of shape, get scale of shape in comparison
-             * to default normal map image, combine all edge and individual pixels into one list, get color for each pixel from default
-             * normal map image using scale and relative location, write all pixel colors to new normal map image bitmap using pixel coords
-            */
-            Vector2 xPlus = new Vector2(x + 1, y);
-            Vector2 xMinus = new Vector2(x - 1, y);
-            Vector2 yPlus = new Vector2(x, y + 1);
-            Vector2 yMinus = new Vector2(x, y - 1);
-            if(NMG.IsPixelWithinBounds(xPlus) && this.IsIndividualColorWithinColorDistance(xPlus) && this.PixelsAlreadyChecked.Contains(xPlus) == false)
-            {
-                this.PixelsToCheck.Add(xPlus);
-            }
-
-        }
-
-        private bool IsIndividualColorWithinColorDistance(Vector2 xy)
-        {
-            if(NormalMapGeneratorForm.GetColorDistance(NMG.OriginalImageBitmap.GetPixel(xy.X, xy.Y), NMG.IndividualColor) <= NMG.IndividualColorMaxDifference)
-            {
-                return true;
-            }
-            return false;
-        }
     }
 
+    /// <summary>
+    /// Class representing 2 integers: X, Y. Used for pixel coordinates.
+    /// </summary>
     public struct Vector2
     {
         public int X;
