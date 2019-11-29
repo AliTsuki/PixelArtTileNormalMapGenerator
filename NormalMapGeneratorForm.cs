@@ -31,7 +31,7 @@ namespace PixelArtTileNormalMapGenerator
         private int SeparatorColorMaxDifference;
         private int IndividualColorMaxDifference;
         // Lists
-        private static List<TileObject> tileObjects = new List<TileObject>();
+        private List<ConvexObject> ConvexObjects = new List<ConvexObject>();
         // Enum
         private enum ColorType
         {
@@ -70,7 +70,7 @@ namespace PixelArtTileNormalMapGenerator
             this.BackgroundColor = Color.White;
             this.SeparatorColor = Color.White;
             this.IndividualColor = Color.White;
-            tileObjects.Clear();
+            this.ConvexObjects.Clear();
         }
 
         /// <summary>
@@ -230,11 +230,11 @@ namespace PixelArtTileNormalMapGenerator
                         {
                             if(this.HasPixelAlreadyBeenAdded(x, y) == false)
                             {
-                                TileObject newTileObject = new TileObject();
-                                tileObjects.Add(newTileObject);
-                                this.CheckAdjacentPixels(x, y, newTileObject);
-                                this.FloodFill(newTileObject);
-                                this.CreateNormalMapForTileObject(newTileObject);
+                                ConvexObject co = new ConvexObject();
+                                this.ConvexObjects.Add(co);
+                                this.CheckAdjacentPixels(x, y, co);
+                                this.FloodFill(co);
+                                this.CreateNormalMapForConvexObject(co);
                             }
                         }
                     }
@@ -247,16 +247,16 @@ namespace PixelArtTileNormalMapGenerator
         }
 
         /// <summary>
-        /// Checks if a pixel coordinate has already been added to a TileObject.
+        /// Checks if a pixel coordinate has already been added to a Convex Object.
         /// </summary>
         /// <param name="x">X coordinate of pixel.</param>
         /// <param name="y">Y coordinate of pixel.</param>
-        /// <returns>Returns true if pixel coords have already been added to a Tile Object.</returns>
+        /// <returns>Returns true if pixel coords have already been added to a Convex Object.</returns>
         private bool HasPixelAlreadyBeenAdded(int x, int y)
         {
-            foreach(TileObject tileObject in tileObjects)
+            foreach(ConvexObject co in this.ConvexObjects)
             {
-                if(tileObject.DoesPixelExistInThisObject(x, y) == true)
+                if(co.DoesPixelExistInThisObject(x, y) == true)
                 {
                     return true;
                 }
@@ -322,11 +322,11 @@ namespace PixelArtTileNormalMapGenerator
         /// </summary>
         /// <param name="x">X coordinate of pixel.</param>
         /// <param name="y">Y coordinate of pixel.</param>
-        /// <param name="tileObject">Tile Object the parent pixel belongs to.</param>
-        private void CheckAdjacentPixels(int x, int y, TileObject tileObject)
+        /// <param name="co">Convex Object the parent pixel belongs to.</param>
+        private void CheckAdjacentPixels(int x, int y, ConvexObject co)
         {
-            tileObject.AddNewIndividualPixel(new Vector2(x, y));
-            tileObject.AddPixelAlreadyChecked(new Vector2(x, y));
+            co.AddNewIndividualPixel(new Vector2(x, y));
+            co.AddPixelAlreadyChecked(new Vector2(x, y));
             Vector2[] adjacentPixelCoords = new Vector2[4]
             {
                 new Vector2(x + 1, y),
@@ -336,56 +336,58 @@ namespace PixelArtTileNormalMapGenerator
             };
             for(int i = 0; i < adjacentPixelCoords.Length; i++)
             {
-                if(this.IsPixelWithinBounds(adjacentPixelCoords[i]) && this.IsColorWithinColorDistance(adjacentPixelCoords[i], ColorType.Individual) && tileObject.PixelsAlreadyChecked.Contains(adjacentPixelCoords[i]) == false)
+                if(this.IsPixelWithinBounds(adjacentPixelCoords[i]) && this.IsColorWithinColorDistance(adjacentPixelCoords[i], ColorType.Individual) && co.PixelsAlreadyChecked.Contains(adjacentPixelCoords[i]) == false)
                 {
-                    tileObject.AddPixelToCheck(adjacentPixelCoords[i]);
+                    co.AddPixelToCheck(adjacentPixelCoords[i]);
                 }
-                else if(this.IsPixelWithinBounds(adjacentPixelCoords[i]) && this.IsColorWithinColorDistance(adjacentPixelCoords[i], ColorType.Separator) && tileObject.PixelsAlreadyChecked.Contains(adjacentPixelCoords[i]) == false)
+                else if(this.IsPixelWithinBounds(adjacentPixelCoords[i]) && this.IsColorWithinColorDistance(adjacentPixelCoords[i], ColorType.Separator) && co.PixelsAlreadyChecked.Contains(adjacentPixelCoords[i]) == false)
                 {
-                    tileObject.AddNewEdgePixel(adjacentPixelCoords[i]);
-                    tileObject.AddPixelAlreadyChecked(adjacentPixelCoords[i]);
+                    co.AddNewEdgePixel(adjacentPixelCoords[i]);
+                    co.AddPixelAlreadyChecked(adjacentPixelCoords[i]);
                 }
                 else
                 {
-                    tileObject.AddPixelAlreadyChecked(adjacentPixelCoords[i]);
+                    co.AddPixelAlreadyChecked(adjacentPixelCoords[i]);
                 }
             }
         }
 
         /// <summary>
-        /// Runs the check adjacent pixels method on each pixel that needs to be checked. Works recursively to find all adjacent pixels for a tile object.
+        /// Runs the check adjacent pixels method on each pixel that needs to be checked. Works recursively to find all adjacent pixels for a convex object.
         /// </summary>
-        /// <param name="tileObject">Tile Object the parent pixel belongs to.</param>
-        private void FloodFill(TileObject tileObject)
+        /// <param name="co">Convex Object the parent pixel belongs to.</param>
+        private void FloodFill(ConvexObject co)
         {
-            while(tileObject.PixelsToCheck.Count > 0)
+            while(co.PixelsToCheck.Count > 0)
             {
-                List<Vector2> currentPixelsToCheck = tileObject.PixelsToCheck.ToList();
-                tileObject.ClearPixelsToCheck();
+                List<Vector2> currentPixelsToCheck = co.PixelsToCheck.ToList();
+                co.ClearPixelsToCheck();
                 foreach(Vector2 pixel in currentPixelsToCheck)
                 {
-                    this.CheckAdjacentPixels(pixel.X, pixel.Y, tileObject);
+                    this.CheckAdjacentPixels(pixel.X, pixel.Y, co);
                 }
             }
-            tileObject.ClearPixelsToCheck();
-            tileObject.ClearPixelsAlreadyChecked();
+            co.ClearPixelsToCheck();
+            co.ClearPixelsAlreadyChecked();
         }
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="tileObject">Tile Object the parent pixel belongs to.</param>
-        private void CreateNormalMapForTileObject(TileObject tileObject)
+        /// <param name="co">Convex Object the parent pixel belongs to.</param>
+        private void CreateNormalMapForConvexObject(ConvexObject co)
         {
             // TODO: Translate normal map color from default normal map by scale to current normal map and add the pixels to bitmap
+            // Solution: Loop through all edge pixels, convert them to lines, use change in linear shape to denote vertices, get center point using width and height,
+            // assign UV coordinates based off angle from center point to each vertex, use barycentric projection for each pixel in relation to the 2 closest vertices
+            // and the center point to get the UV for each pixel, scale default UV map texture to fit width/height of tile object, use UVs to select pixel color
         }
     }
 
-    // TODO: come up with a better name than TileObjects, yuck
     /// <summary>
     /// Class representing a connected group of pixels of varied shape.
     /// </summary>
-    public class TileObject
+    public class ConvexObject
     {
         public List<Vector2> EdgePixels { get; private set; }
         public List<Vector2> IndividualPixels { get; private set; }
@@ -398,7 +400,7 @@ namespace PixelArtTileNormalMapGenerator
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public TileObject()
+        public ConvexObject()
         {
             this.EdgePixels = new List<Vector2>();
             this.IndividualPixels = new List<Vector2>();
