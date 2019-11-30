@@ -249,12 +249,12 @@ namespace PixelArtTileNormalMapGenerator
             this.cToken = this.cTokenSource.Token;
             this.CreatingNormalMap = true;
             this.NormalMapGenerationProgressBar.Minimum = 0;
-            this.NormalMapGenerationProgressBar.Maximum = this.ImageWidth * this.ImageHeight;
-            this.NormalMapGenerationProgressBar.Step = 1;
+            this.NormalMapGenerationProgressBar.Maximum = (this.ImageWidth * this.ImageHeight) + 1;
+            this.NormalMapGenerationProgressBar.Step = this.NormalMapGenerationProgressBar.Maximum / 100;
             Progress<string> nmgProgressLabelText = new Progress<string>(s => this.NormalMapGenerationProgressLabel.Text = s);
             Progress<string> nmgProgressLabelDetailText = new Progress<string>(s => this.NormalMapGenerationProgressDetailLabel.Text = s);
             Progress<int> nmgProgressBarValue = new Progress<int>(i => this.NormalMapGenerationProgressBar.Value = i);
-            await Task.Factory.StartNew(() => GeneratorWorker.CreateNormalMap(this, this.cToken, nmgProgressLabelText, nmgProgressBarValue, nmgProgressLabelDetailText), TaskCreationOptions.LongRunning);
+            await Task.Factory.StartNew(() => GeneratorWorker.CreateNormalMap(this, this.cToken, nmgProgressLabelText, nmgProgressBarValue, nmgProgressLabelDetailText), TaskCreationOptions.RunContinuationsAsynchronously);
             this.UpdateNormalMapPreviewBox();
         }
 
@@ -286,8 +286,6 @@ namespace PixelArtTileNormalMapGenerator
             Separator,
             Individual
         }
-        // Debug
-        public static Stopwatch watch = new Stopwatch();
 
         /// <summary>
         /// Creates a normal map from a loaded bitmap image.
@@ -301,19 +299,13 @@ namespace PixelArtTileNormalMapGenerator
         {
             nmg = nmgf;
             CurrentProgress = 0;
-            MaximumPixelsToCheck = nmg.ImageWidth * nmg.ImageHeight;
+            MaximumPixelsToCheck = nmg.ImageWidth * nmg.ImageHeight + 1;
             progressLabelText.Report("In Progress...");
-            progressBarValue.Report(CurrentProgress);
-            float percent = (float)CurrentProgress / (float)MaximumPixelsToCheck * 100f;
-            progressLabelDetailText.Report($@"{percent.ToString("00.00")}%  --- {CurrentProgress} / {MaximumPixelsToCheck}");
             try
             {
                 CurrentProgress = 1;
                 for(int x = 0; x < nmg.ImageWidth; x++)
                 {
-                    // DEBUG STUFF
-                    watch.Start();
-                    // DEBUG STUFF END
                     for(int y = 0; y < nmg.ImageHeight; y++)
                     {
                         cToken.ThrowIfCancellationRequested();
@@ -327,35 +319,19 @@ namespace PixelArtTileNormalMapGenerator
                             if(HasPixelAlreadyBeenAdded(x, y) == false)
                             {
                                 ConvexObject co = new ConvexObject();
-                                CheckAdjacentPixels(x, y, co);
-                                FloodFill(co);
+                                FloodFill(co, x, y);
                                 co.CalculateBounds(nmg.ImageWidth, nmg.ImageHeight);
                                 AddToTile(co);
                                 CreateNormalMapForConvexObject(co);
                             }
                         }
                         CurrentProgress++;
-                        progressBarValue.Report(CurrentProgress);
-                        percent = (float)CurrentProgress / (float)MaximumPixelsToCheck * 100f;
-                        progressLabelDetailText.Report($@"{percent.ToString("00.00")}%  --- {CurrentProgress} / {MaximumPixelsToCheck}");
                     }
-                    // DEBUG STUFF
-                    watch.Stop();
-                    float avgTotalPixelsPerCO = 0;
-                    float avgCOPerTile = 0;
-                    foreach(KeyValuePair<Vector2, Tile> tile in nmg.Tiles)
-                    {
-                        avgCOPerTile += tile.Value.ConvexObjects.Count;
-                        foreach(ConvexObject co in tile.Value.ConvexObjects)
-                        {
-                            avgTotalPixelsPerCO += co.EdgePixels.Count + co.IndividualPixels.Count;
-                        }
-                    }
-                    avgTotalPixelsPerCO /= avgCOPerTile;
-                    avgCOPerTile /= nmg.Tiles.Count;
-                    Console.WriteLine($@"Elapsed: {watch.ElapsedMilliseconds}, Current pos: {x}, Tiles: {nmg.Tiles.Count}, Avg CO per Tile: {avgCOPerTile.ToString("00.00")}, Avg Total Pixels per CO: {avgTotalPixelsPerCO.ToString("00.00")}");
-                    // DEBUG STUFF END
+                    progressBarValue.Report(CurrentProgress);
+                    float percent = (float)CurrentProgress / (float)MaximumPixelsToCheck * 100f;
+                    progressLabelDetailText.Report($@"{percent.ToString("00.00")}%  --- {CurrentProgress.ToString("0,0")} / {MaximumPixelsToCheck.ToString("0,0")}");
                 }
+                progressLabelText.Report("Finished");
                 nmg.CreatingNormalMap = false;
             }
             catch(OperationCanceledException)
@@ -510,13 +486,14 @@ namespace PixelArtTileNormalMapGenerator
         /// <summary>
         /// Adds pixels adjacent to the one specified to the list of pixels needing to be checked if they meet the criteria. Used by flood fill.
         /// </summary>
+        /// <param name="co">Convex Object the parent pixel belongs to.</param>
         /// <param name="x">X coordinate of pixel.</param>
         /// <param name="y">Y coordinate of pixel.</param>
-        /// <param name="co">Convex Object the parent pixel belongs to.</param>
-        private static void CheckAdjacentPixels(int x, int y, ConvexObject co)
+        private static void CheckAdjacentPixels(ConvexObject co, int x, int y)
         {
-            co.AddNewIndividualPixel(new Vector2(x, y));
-            co.AddPixelAlreadyChecked(new Vector2(x, y));
+            Vector2 xy = new Vector2(x, y);
+            co.AddNewIndividualPixel(xy);
+            co.AddPixelAlreadyChecked(xy);
             Vector2[] adjacentPixelCoords = new Vector2[4]
             {
                 new Vector2(x + 1, y),
@@ -526,11 +503,13 @@ namespace PixelArtTileNormalMapGenerator
             };
             for(int i = 0; i < adjacentPixelCoords.Length; i++)
             {
-                if(IsPixelWithinBounds(adjacentPixelCoords[i]) && IsColorWithinColorDistance(adjacentPixelCoords[i], ColorType.Individual) && co.PixelsAlreadyChecked.Contains(adjacentPixelCoords[i]) == false)
+                if(IsPixelWithinBounds(adjacentPixelCoords[i]) && IsColorWithinColorDistance(adjacentPixelCoords[i], ColorType.Individual)
+                    && co.PixelsToCheck.Contains(adjacentPixelCoords[i]) == false && co.PixelsAlreadyChecked.Contains(adjacentPixelCoords[i]) == false)
                 {
                     co.AddPixelToCheck(adjacentPixelCoords[i]);
                 }
-                else if(IsPixelWithinBounds(adjacentPixelCoords[i]) && IsColorWithinColorDistance(adjacentPixelCoords[i], ColorType.Separator) && co.PixelsAlreadyChecked.Contains(adjacentPixelCoords[i]) == false)
+                else if(IsPixelWithinBounds(adjacentPixelCoords[i]) && IsColorWithinColorDistance(adjacentPixelCoords[i], ColorType.Separator)
+                    && co.PixelsAlreadyChecked.Contains(adjacentPixelCoords[i]) == false)
                 {
                     co.AddNewEdgePixel(adjacentPixelCoords[i]);
                     co.AddPixelAlreadyChecked(adjacentPixelCoords[i]);
@@ -546,16 +525,16 @@ namespace PixelArtTileNormalMapGenerator
         /// Runs the check adjacent pixels method on each pixel that needs to be checked. Works recursively to find all adjacent pixels for a convex object.
         /// </summary>
         /// <param name="co">Convex Object the parent pixel belongs to.</param>
-        private static void FloodFill(ConvexObject co)
+        private static void FloodFill(ConvexObject co, int x, int y)
         {
-            // TODO: The average total pixels per CO is showing 300+, this should not be the case, something in this algorithm/CheckAdjacentPixels is bugged and adding too many pixels to the CO, slowdown especiallary around x:305
+            CheckAdjacentPixels(co, x, y);
             while(co.PixelsToCheck.Count > 0)
             {
                 List<Vector2> currentPixelsToCheck = co.PixelsToCheck.ToList();
                 co.ClearPixelsToCheck();
                 foreach(Vector2 pixel in currentPixelsToCheck)
                 {
-                    CheckAdjacentPixels(pixel.X, pixel.Y, co);
+                    CheckAdjacentPixels(co, pixel.X, pixel.Y);
                 }
             }
             co.ClearPixelsToCheck();
