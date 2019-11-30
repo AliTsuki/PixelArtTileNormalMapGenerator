@@ -69,15 +69,25 @@ namespace PixelArtTileNormalMapGenerator
         {
             this.LoadDefaultNormal();
             this.OriginalImageBitmap = null;
+            this.OriginalImagePreviewBox.Image = this.OriginalImageBitmap;
             this.NormalMapImageBitmap = null;
+            this.NormalMapImagePreviewBox.Image = this.NormalMapImageBitmap;
             this.NormalMapDefaultBGColor = Color.FromArgb(255, 118, 137, 249);
-            this.IgnoreColor = Color.White;
-            this.BackgroundColor = Color.White;
-            this.SeparatorColor = Color.White;
-            this.IndividualColor = Color.White;
-            this.BackgroundColorMaxDifference = 0;
-            this.SeparatorColorMaxDifference = 0;
-            this.IndividualColorMaxDifference = 0;
+            this.BackgroundColor = Color.FromArgb(255, 240, 202, 163);
+            this.BackgroundColorBox.BackColor = this.BackgroundColor;
+            this.SeparatorColor = Color.FromArgb(255, 95, 52, 33);
+            this.SeparatorColorBox.BackColor = this.SeparatorColor;
+            this.IndividualColor = Color.FromArgb(255, 199, 119, 82);
+            this.IndividualColorBox.BackColor = this.IndividualColor;
+            this.BackgroundColorMaxDifference = 10;
+            this.BackgroundColorMaxDifferencePicker.Value = this.BackgroundColorMaxDifference;
+            this.SeparatorColorMaxDifference = 10;
+            this.SeparatorColorMaxDifferencePicker.Value = this.SeparatorColorMaxDifference;
+            this.IndividualColorMaxDifference = 10;
+            this.IndividualColorMaxDifferencePicker.Value = this.IndividualColorMaxDifference;
+            this.NormalMapGenerationProgressLabel.Text = "Idle";
+            this.NormalMapGenerationProgressBar.Value = 0;
+            this.NormalMapGenerationProgressDetailLabel.Text = @"0% --- 0 / 0";
             this.Tiles.Clear();
         }
 
@@ -107,21 +117,6 @@ namespace PixelArtTileNormalMapGenerator
         }
 
         // TODO: create a better interface to get color values, add a dropper tool to select color from loaded image
-
-        /// <summary>
-        /// Opens a color select dialog box for ignore color.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        private void IgnoreColorDialogButton_Click(object sender, EventArgs args)
-        {
-            DialogResult result = this.IgnoreColorDialog.ShowDialog();
-            if(result == DialogResult.OK)
-            {
-                this.IgnoreColor = this.IgnoreColorDialog.Color;
-                this.IgnoreColorBox.BackColor = this.IgnoreColor;
-            }
-        }
 
         /// <summary>
         /// Opens a color select dialog box for background color.
@@ -175,7 +170,6 @@ namespace PixelArtTileNormalMapGenerator
         /// <param name="args"></param>
         private void GenerateNormalMapButton_Click(object sender, EventArgs args)
         {
-            this.IgnoreColorMaxDifference = (int)this.IgnoreColorMaxDifferencePicker.Value;
             this.BackgroundColorMaxDifference = (int)this.BackgroundColorMaxDifferencePicker.Value;
             this.SeparatorColorMaxDifference = (int)this.SeparatorColorMaxDifferencePicker.Value;
             this.IndividualColorMaxDifference = (int)this.IndividualColorMaxDifferencePicker.Value;
@@ -295,6 +289,14 @@ namespace PixelArtTileNormalMapGenerator
         // Debug
         public static Stopwatch watch = new Stopwatch();
 
+        /// <summary>
+        /// Creates a normal map from a loaded bitmap image.
+        /// </summary>
+        /// <param name="nmgf">Reference to the parent form.</param>
+        /// <param name="cToken">Reference to the cancellation token.</param>
+        /// <param name="progressLabelText">Reference to progress label.</param>
+        /// <param name="progressBarValue">Reference to progress bar.</param>
+        /// <param name="progressLabelDetailText">Reference to progress detail label.</param>
         public static void CreateNormalMap(NormalMapGeneratorForm nmgf, CancellationToken cToken, IProgress<string> progressLabelText, IProgress<int> progressBarValue, IProgress<string> progressLabelDetailText)
         {
             nmg = nmgf;
@@ -302,7 +304,8 @@ namespace PixelArtTileNormalMapGenerator
             MaximumPixelsToCheck = nmg.ImageWidth * nmg.ImageHeight;
             progressLabelText.Report("In Progress...");
             progressBarValue.Report(CurrentProgress);
-            progressLabelDetailText.Report($@"{CurrentProgress} / {MaximumPixelsToCheck}");
+            float percent = (float)CurrentProgress / (float)MaximumPixelsToCheck * 100f;
+            progressLabelDetailText.Report($@"{percent.ToString("00.00")}%  --- {CurrentProgress} / {MaximumPixelsToCheck}");
             try
             {
                 CurrentProgress = 1;
@@ -333,9 +336,8 @@ namespace PixelArtTileNormalMapGenerator
                         }
                         CurrentProgress++;
                         progressBarValue.Report(CurrentProgress);
-                        float percentf = (float)CurrentProgress / (float)MaximumPixelsToCheck * 100f;
-                        string percent = percentf.ToString("00.00");
-                        progressLabelDetailText.Report($@"{percent}%  --- {CurrentProgress} / {MaximumPixelsToCheck}");
+                        percent = (float)CurrentProgress / (float)MaximumPixelsToCheck * 100f;
+                        progressLabelDetailText.Report($@"{percent.ToString("00.00")}%  --- {CurrentProgress} / {MaximumPixelsToCheck}");
                     }
                     // DEBUG STUFF
                     watch.Stop();
