@@ -48,12 +48,24 @@
             this.IndividualColorBox = new System.Windows.Forms.PictureBox();
             this.OriginalImageLabel = new System.Windows.Forms.Label();
             this.NormalMapImageLabel = new System.Windows.Forms.Label();
+            this.IgnoreColorMaxDifferencePicker = new System.Windows.Forms.NumericUpDown();
+            this.BackgroundColorMaxDifferencePicker = new System.Windows.Forms.NumericUpDown();
+            this.SeparatorColorMaxDifferencePicker = new System.Windows.Forms.NumericUpDown();
+            this.IndividualColorMaxDifferencePicker = new System.Windows.Forms.NumericUpDown();
+            this.NormalMapGenerationProgressBar = new System.Windows.Forms.ProgressBar();
+            this.NormalMapGenerationProgressLabel = new System.Windows.Forms.Label();
+            this.NormalMapGenerationProgressDetailLabel = new System.Windows.Forms.Label();
+            this.CancelGeneratorButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.OriginalImagePreviewBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.NormalMapImagePreviewBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.IgnoreColorBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.BackgroundColorBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.SeparatorColorBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.IndividualColorBox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.IgnoreColorMaxDifferencePicker)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.BackgroundColorMaxDifferencePicker)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.SeparatorColorMaxDifferencePicker)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.IndividualColorMaxDifferencePicker)).BeginInit();
             this.SuspendLayout();
             // 
             // OriginalImagePreviewBox
@@ -76,7 +88,7 @@
             // 
             // LoadImageButton
             // 
-            this.LoadImageButton.Location = new System.Drawing.Point(25, 47);
+            this.LoadImageButton.Location = new System.Drawing.Point(25, 28);
             this.LoadImageButton.Name = "LoadImageButton";
             this.LoadImageButton.Size = new System.Drawing.Size(128, 23);
             this.LoadImageButton.TabIndex = 2;
@@ -86,9 +98,9 @@
             // 
             // GenerateNormalMapButton
             // 
-            this.GenerateNormalMapButton.Location = new System.Drawing.Point(25, 383);
+            this.GenerateNormalMapButton.Location = new System.Drawing.Point(25, 476);
             this.GenerateNormalMapButton.Name = "GenerateNormalMapButton";
-            this.GenerateNormalMapButton.Size = new System.Drawing.Size(128, 23);
+            this.GenerateNormalMapButton.Size = new System.Drawing.Size(129, 23);
             this.GenerateNormalMapButton.TabIndex = 3;
             this.GenerateNormalMapButton.Text = "Generate Normal Map";
             this.GenerateNormalMapButton.UseVisualStyleBackColor = true;
@@ -96,9 +108,9 @@
             // 
             // ResetButton
             // 
-            this.ResetButton.Location = new System.Drawing.Point(50, 429);
+            this.ResetButton.Location = new System.Drawing.Point(25, 536);
             this.ResetButton.Name = "ResetButton";
-            this.ResetButton.Size = new System.Drawing.Size(75, 23);
+            this.ResetButton.Size = new System.Drawing.Size(128, 23);
             this.ResetButton.TabIndex = 4;
             this.ResetButton.Text = "Reset";
             this.ResetButton.UseVisualStyleBackColor = true;
@@ -106,7 +118,7 @@
             // 
             // IgnoreColorDialogButton
             // 
-            this.IgnoreColorDialogButton.Location = new System.Drawing.Point(24, 120);
+            this.IgnoreColorDialogButton.Location = new System.Drawing.Point(24, 85);
             this.IgnoreColorDialogButton.Name = "IgnoreColorDialogButton";
             this.IgnoreColorDialogButton.Size = new System.Drawing.Size(129, 25);
             this.IgnoreColorDialogButton.TabIndex = 5;
@@ -116,7 +128,7 @@
             // 
             // SelectBackgroundColorButton
             // 
-            this.SelectBackgroundColorButton.Location = new System.Drawing.Point(24, 152);
+            this.SelectBackgroundColorButton.Location = new System.Drawing.Point(25, 143);
             this.SelectBackgroundColorButton.Name = "SelectBackgroundColorButton";
             this.SelectBackgroundColorButton.Size = new System.Drawing.Size(129, 23);
             this.SelectBackgroundColorButton.TabIndex = 6;
@@ -126,7 +138,7 @@
             // 
             // SelectSeparatorColorButton
             // 
-            this.SelectSeparatorColorButton.Location = new System.Drawing.Point(24, 182);
+            this.SelectSeparatorColorButton.Location = new System.Drawing.Point(24, 198);
             this.SelectSeparatorColorButton.Name = "SelectSeparatorColorButton";
             this.SelectSeparatorColorButton.Size = new System.Drawing.Size(129, 23);
             this.SelectSeparatorColorButton.TabIndex = 7;
@@ -136,7 +148,7 @@
             // 
             // SelectIndividualColorButton
             // 
-            this.SelectIndividualColorButton.Location = new System.Drawing.Point(24, 212);
+            this.SelectIndividualColorButton.Location = new System.Drawing.Point(25, 253);
             this.SelectIndividualColorButton.Name = "SelectIndividualColorButton";
             this.SelectIndividualColorButton.Size = new System.Drawing.Size(129, 23);
             this.SelectIndividualColorButton.TabIndex = 8;
@@ -151,7 +163,7 @@
             // IgnoreColorBox
             // 
             this.IgnoreColorBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.IgnoreColorBox.Location = new System.Drawing.Point(160, 120);
+            this.IgnoreColorBox.Location = new System.Drawing.Point(160, 85);
             this.IgnoreColorBox.Name = "IgnoreColorBox";
             this.IgnoreColorBox.Size = new System.Drawing.Size(25, 25);
             this.IgnoreColorBox.TabIndex = 9;
@@ -160,7 +172,7 @@
             // BackgroundColorBox
             // 
             this.BackgroundColorBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.BackgroundColorBox.Location = new System.Drawing.Point(160, 152);
+            this.BackgroundColorBox.Location = new System.Drawing.Point(160, 143);
             this.BackgroundColorBox.Name = "BackgroundColorBox";
             this.BackgroundColorBox.Size = new System.Drawing.Size(25, 23);
             this.BackgroundColorBox.TabIndex = 10;
@@ -169,7 +181,7 @@
             // SeparatorColorBox
             // 
             this.SeparatorColorBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.SeparatorColorBox.Location = new System.Drawing.Point(160, 182);
+            this.SeparatorColorBox.Location = new System.Drawing.Point(159, 198);
             this.SeparatorColorBox.Name = "SeparatorColorBox";
             this.SeparatorColorBox.Size = new System.Drawing.Size(25, 22);
             this.SeparatorColorBox.TabIndex = 11;
@@ -178,7 +190,7 @@
             // IndividualColorBox
             // 
             this.IndividualColorBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.IndividualColorBox.Location = new System.Drawing.Point(160, 212);
+            this.IndividualColorBox.Location = new System.Drawing.Point(160, 253);
             this.IndividualColorBox.Name = "IndividualColorBox";
             this.IndividualColorBox.Size = new System.Drawing.Size(25, 23);
             this.IndividualColorBox.TabIndex = 12;
@@ -202,11 +214,84 @@
             this.NormalMapImageLabel.TabIndex = 14;
             this.NormalMapImageLabel.Text = "Normal Map";
             // 
+            // IgnoreColorMaxDifferencePicker
+            // 
+            this.IgnoreColorMaxDifferencePicker.Location = new System.Drawing.Point(135, 117);
+            this.IgnoreColorMaxDifferencePicker.Name = "IgnoreColorMaxDifferencePicker";
+            this.IgnoreColorMaxDifferencePicker.Size = new System.Drawing.Size(50, 20);
+            this.IgnoreColorMaxDifferencePicker.TabIndex = 15;
+            this.IgnoreColorMaxDifferencePicker.ThousandsSeparator = true;
+            // 
+            // BackgroundColorMaxDifferencePicker
+            // 
+            this.BackgroundColorMaxDifferencePicker.Location = new System.Drawing.Point(135, 172);
+            this.BackgroundColorMaxDifferencePicker.Name = "BackgroundColorMaxDifferencePicker";
+            this.BackgroundColorMaxDifferencePicker.Size = new System.Drawing.Size(50, 20);
+            this.BackgroundColorMaxDifferencePicker.TabIndex = 16;
+            // 
+            // SeparatorColorMaxDifferencePicker
+            // 
+            this.SeparatorColorMaxDifferencePicker.Location = new System.Drawing.Point(135, 227);
+            this.SeparatorColorMaxDifferencePicker.Name = "SeparatorColorMaxDifferencePicker";
+            this.SeparatorColorMaxDifferencePicker.Size = new System.Drawing.Size(49, 20);
+            this.SeparatorColorMaxDifferencePicker.TabIndex = 17;
+            // 
+            // IndividualColorMaxDifferencePicker
+            // 
+            this.IndividualColorMaxDifferencePicker.Location = new System.Drawing.Point(135, 282);
+            this.IndividualColorMaxDifferencePicker.Name = "IndividualColorMaxDifferencePicker";
+            this.IndividualColorMaxDifferencePicker.Size = new System.Drawing.Size(50, 20);
+            this.IndividualColorMaxDifferencePicker.TabIndex = 18;
+            // 
+            // NormalMapGenerationProgressBar
+            // 
+            this.NormalMapGenerationProgressBar.Location = new System.Drawing.Point(400, 571);
+            this.NormalMapGenerationProgressBar.Name = "NormalMapGenerationProgressBar";
+            this.NormalMapGenerationProgressBar.Size = new System.Drawing.Size(100, 23);
+            this.NormalMapGenerationProgressBar.TabIndex = 19;
+            // 
+            // NormalMapGenerationProgressLabel
+            // 
+            this.NormalMapGenerationProgressLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.NormalMapGenerationProgressLabel.AutoSize = true;
+            this.NormalMapGenerationProgressLabel.Location = new System.Drawing.Point(316, 574);
+            this.NormalMapGenerationProgressLabel.Name = "NormalMapGenerationProgressLabel";
+            this.NormalMapGenerationProgressLabel.Size = new System.Drawing.Size(78, 13);
+            this.NormalMapGenerationProgressLabel.TabIndex = 21;
+            this.NormalMapGenerationProgressLabel.Text = "Not processing";
+            // 
+            // NormalMapGenerationProgressDetailLabel
+            // 
+            this.NormalMapGenerationProgressDetailLabel.AutoSize = true;
+            this.NormalMapGenerationProgressDetailLabel.Location = new System.Drawing.Point(506, 574);
+            this.NormalMapGenerationProgressDetailLabel.Name = "NormalMapGenerationProgressDetailLabel";
+            this.NormalMapGenerationProgressDetailLabel.Size = new System.Drawing.Size(30, 13);
+            this.NormalMapGenerationProgressDetailLabel.TabIndex = 22;
+            this.NormalMapGenerationProgressDetailLabel.Text = "0 / 0";
+            // 
+            // CancelGeneratorButton
+            // 
+            this.CancelGeneratorButton.Location = new System.Drawing.Point(25, 506);
+            this.CancelGeneratorButton.Name = "CancelGeneratorButton";
+            this.CancelGeneratorButton.Size = new System.Drawing.Size(128, 23);
+            this.CancelGeneratorButton.TabIndex = 23;
+            this.CancelGeneratorButton.Text = "Cancel";
+            this.CancelGeneratorButton.UseVisualStyleBackColor = true;
+            this.CancelGeneratorButton.Click += new System.EventHandler(this.CancelGeneratorButton_Click);
+            // 
             // NormalMapGeneratorForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1298, 606);
+            this.Controls.Add(this.CancelGeneratorButton);
+            this.Controls.Add(this.NormalMapGenerationProgressDetailLabel);
+            this.Controls.Add(this.NormalMapGenerationProgressLabel);
+            this.Controls.Add(this.NormalMapGenerationProgressBar);
+            this.Controls.Add(this.IndividualColorMaxDifferencePicker);
+            this.Controls.Add(this.SeparatorColorMaxDifferencePicker);
+            this.Controls.Add(this.BackgroundColorMaxDifferencePicker);
+            this.Controls.Add(this.IgnoreColorMaxDifferencePicker);
             this.Controls.Add(this.NormalMapImageLabel);
             this.Controls.Add(this.OriginalImageLabel);
             this.Controls.Add(this.IndividualColorBox);
@@ -231,6 +316,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.BackgroundColorBox)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.SeparatorColorBox)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.IndividualColorBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.IgnoreColorMaxDifferencePicker)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.BackgroundColorMaxDifferencePicker)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.SeparatorColorMaxDifferencePicker)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.IndividualColorMaxDifferencePicker)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -258,6 +347,14 @@
         private System.Windows.Forms.PictureBox IndividualColorBox;
         private System.Windows.Forms.Label OriginalImageLabel;
         private System.Windows.Forms.Label NormalMapImageLabel;
+        private System.Windows.Forms.NumericUpDown IgnoreColorMaxDifferencePicker;
+        private System.Windows.Forms.NumericUpDown BackgroundColorMaxDifferencePicker;
+        private System.Windows.Forms.NumericUpDown SeparatorColorMaxDifferencePicker;
+        private System.Windows.Forms.NumericUpDown IndividualColorMaxDifferencePicker;
+        private System.Windows.Forms.ProgressBar NormalMapGenerationProgressBar;
+        private System.Windows.Forms.Label NormalMapGenerationProgressLabel;
+        private System.Windows.Forms.Label NormalMapGenerationProgressDetailLabel;
+        private System.Windows.Forms.Button CancelGeneratorButton;
     }
 }
 
