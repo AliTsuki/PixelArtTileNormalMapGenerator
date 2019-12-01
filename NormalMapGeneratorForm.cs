@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -113,7 +114,8 @@ namespace PixelArtTileNormalMapGenerator
             }
         }
 
-        // TODO: create a better interface to get color values, add a dropper tool to select color from loaded image
+        // TODO: Tidy up the form and make it look nicer, make sure elements are aligned etc.
+        // TODO: Add a better way to select colors, ideas: color dropper select color from image preview box, a dropdown of all the colors in the image to select from etc.
 
         /// <summary>
         /// Opens a color select dialog box for background color.
@@ -216,6 +218,37 @@ namespace PixelArtTileNormalMapGenerator
         }
 
         /// <summary>
+        /// Saves the current normal map to disk.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void SaveButton_Click(object sender, EventArgs e)
+        {
+            if(NormalMapImageBitmap != null)
+            {
+                if(CreatingNormalMap == false)
+                {
+                    this.SaveFileDialog.Filter = "PNG Image (*.PNG, *.png)|";
+                    this.SaveFileDialog.Title = "Save Normal Map...";
+                    this.SaveFileDialog.FileName = Path.GetFileNameWithoutExtension(this.OpenFileDialog.FileName) + " Normal.PNG";
+                    DialogResult result = this.SaveFileDialog.ShowDialog();
+                    if(result == DialogResult.OK)
+                    {
+                        NormalMapImageBitmap.Save(this.SaveFileDialog.FileName, ImageFormat.Png);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show($@"The normal map is currently being generated!{Environment.NewLine}Please wait until it finishes to save.");
+                }
+            }
+            else
+            {
+                MessageBox.Show($@"There is no normal map to save!{Environment.NewLine}Please generate a normal map first.");
+            }
+        }
+
+        /// <summary>
         /// Loads the default normal map texture as bitmap.
         /// </summary>
         private void LoadDefaultNormal()
@@ -244,6 +277,7 @@ namespace PixelArtTileNormalMapGenerator
         /// </summary>
         private async void CreateNormalMap()
         {
+            Tiles.Clear();
             CreatingNormalMap = true;
             cToken = cTokenSource.Token;
             this.NormalMapGenerationProgressBar.Minimum = 0;

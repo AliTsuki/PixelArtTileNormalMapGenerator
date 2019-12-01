@@ -250,20 +250,17 @@ namespace PixelArtTileNormalMapGenerator
             };
             for(int i = 0; i < adjacentPixelCoords.Length; i++)
             {
-                if(IsPixelWithinBounds(adjacentPixelCoords[i]) && IsPixelColorWithinColorDistance(adjacentPixelCoords[i], ColorType.Individual)
-                    && co.PixelsToCheck.Contains(adjacentPixelCoords[i]) == false && co.PixelsAlreadyChecked.Contains(adjacentPixelCoords[i]) == false)
+                if(IsPixelWithinBounds(adjacentPixelCoords[i]) && co.PixelsAlreadyChecked.Contains(adjacentPixelCoords[i]) == false && co.PixelsToCheck.Contains(adjacentPixelCoords[i]) == false)
                 {
-                    co.AddPixelToCheck(adjacentPixelCoords[i]);
-                }
-                else if(IsPixelWithinBounds(adjacentPixelCoords[i]) && IsPixelColorWithinColorDistance(adjacentPixelCoords[i], ColorType.Separator)
-                    && co.PixelsAlreadyChecked.Contains(adjacentPixelCoords[i]) == false)
-                {
-                    co.AddNewEdgePixel(adjacentPixelCoords[i]);
-                    co.AddPixelAlreadyChecked(adjacentPixelCoords[i]);
-                }
-                else
-                {
-                    co.AddPixelAlreadyChecked(adjacentPixelCoords[i]);
+                    if(IsPixelColorWithinColorDistance(adjacentPixelCoords[i], ColorType.Individual))
+                    {
+                        co.AddPixelToCheck(adjacentPixelCoords[i]);
+                    }
+                    else if(IsPixelWithinBounds(adjacentPixelCoords[i]) && IsPixelColorWithinColorDistance(adjacentPixelCoords[i], ColorType.Separator))
+                    {
+                        co.AddNewEdgePixel(adjacentPixelCoords[i]);
+                        co.AddPixelAlreadyChecked(adjacentPixelCoords[i]);
+                    }
                 }
             }
         }
@@ -284,7 +281,6 @@ namespace PixelArtTileNormalMapGenerator
                     CheckAdjacentPixels(co, pixel.X, pixel.Y);
                 }
             }
-            co.ClearPixelsToCheck();
             co.ClearPixelsAlreadyChecked();
         }
 
@@ -302,16 +298,17 @@ namespace PixelArtTileNormalMapGenerator
                 Vector2 uv = new Vector2(difference).ToUV();
                 uvPixelsEdge.Add(new UVPixel(pixel, uv));
             }
-            // TODO: Normal map not working for individual pixels
             foreach(Vector2Int iPixel in co.IndividualPixels)
             {
                 Vector2 interpolatedUV = new Vector2(0, 0);
+                float sumOfWeights = 0f;
                 foreach(UVPixel uvPixel in uvPixelsEdge)
                 {
-                    // TODO: Weighted average needs work
-                    interpolatedUV += uvPixel.UVCoords * (1 / iPixel.Distance(uvPixel.PixelCoords));
+                    float weight = 1f / iPixel.Distance(uvPixel.PixelCoords);
+                    interpolatedUV += uvPixel.UVCoords * weight;
+                    sumOfWeights += weight;
                 }
-                interpolatedUV /= uvPixelsEdge.Count;
+                interpolatedUV /= sumOfWeights;
                 uvPixelsInd.Add(new UVPixel(iPixel, interpolatedUV));
             }
             List<UVPixel> allUVPixels = uvPixelsEdge.Concat(uvPixelsInd).ToList();

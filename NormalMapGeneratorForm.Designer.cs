@@ -31,7 +31,6 @@
             this.OriginalImagePreviewBox = new System.Windows.Forms.PictureBox();
             this.NormalMapImagePreviewBox = new System.Windows.Forms.PictureBox();
             this.LoadImageButton = new System.Windows.Forms.Button();
-            this.IgnoreColorDialog = new System.Windows.Forms.ColorDialog();
             this.GenerateNormalMapButton = new System.Windows.Forms.Button();
             this.ResetButton = new System.Windows.Forms.Button();
             this.BackgroundColorDialog = new System.Windows.Forms.ColorDialog();
@@ -53,6 +52,8 @@
             this.NormalMapGenerationProgressLabel = new System.Windows.Forms.Label();
             this.NormalMapGenerationProgressDetailLabel = new System.Windows.Forms.Label();
             this.CancelGeneratorButton = new System.Windows.Forms.Button();
+            this.SaveButton = new System.Windows.Forms.Button();
+            this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
             ((System.ComponentModel.ISupportInitialize)(this.OriginalImagePreviewBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.NormalMapImagePreviewBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.BackgroundColorBox)).BeginInit();
@@ -247,11 +248,22 @@
             this.CancelGeneratorButton.UseVisualStyleBackColor = true;
             this.CancelGeneratorButton.Click += new System.EventHandler(this.CancelGeneratorButton_Click);
             // 
+            // SaveButton
+            // 
+            this.SaveButton.Location = new System.Drawing.Point(950, 569);
+            this.SaveButton.Name = "SaveButton";
+            this.SaveButton.Size = new System.Drawing.Size(118, 23);
+            this.SaveButton.TabIndex = 24;
+            this.SaveButton.Text = "Save Normal Map";
+            this.SaveButton.UseVisualStyleBackColor = true;
+            this.SaveButton.Click += new System.EventHandler(this.SaveButton_Click);
+            // 
             // NormalMapGeneratorForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1298, 606);
+            this.Controls.Add(this.SaveButton);
             this.Controls.Add(this.CancelGeneratorButton);
             this.Controls.Add(this.NormalMapGenerationProgressDetailLabel);
             this.Controls.Add(this.NormalMapGenerationProgressLabel);
@@ -293,7 +305,6 @@
         private System.Windows.Forms.PictureBox OriginalImagePreviewBox;
         private System.Windows.Forms.PictureBox NormalMapImagePreviewBox;
         private System.Windows.Forms.Button LoadImageButton;
-        private System.Windows.Forms.ColorDialog IgnoreColorDialog;
         private System.Windows.Forms.Button GenerateNormalMapButton;
         private System.Windows.Forms.Button ResetButton;
         private System.Windows.Forms.ColorDialog BackgroundColorDialog;
@@ -315,6 +326,8 @@
         private System.Windows.Forms.Label NormalMapGenerationProgressLabel;
         private System.Windows.Forms.Label NormalMapGenerationProgressDetailLabel;
         private System.Windows.Forms.Button CancelGeneratorButton;
+        private System.Windows.Forms.Button SaveButton;
+        private System.Windows.Forms.SaveFileDialog SaveFileDialog;
     }
 }
 

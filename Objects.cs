@@ -115,7 +115,11 @@ namespace PixelArtTileNormalMapGenerator
             }
             this.Width = rightEdge - leftEdge;
             this.Height = lowerEdge - upperEdge;
-            this.Center = new Vector2Int((rightEdge + leftEdge) / 2, (lowerEdge + upperEdge) / 2);
+            foreach(Vector2Int pixel in allPixels)
+            {
+                this.Center += pixel;
+            }
+            this.Center /= allPixels.Count;
             this.ScaleVsDefault = new Vector2((float)NormalMapGeneratorForm.DefaultNormalMapImageSize / (float)this.Width, (float)NormalMapGeneratorForm.DefaultNormalMapImageSize / (float)this.Height);
         }
 
