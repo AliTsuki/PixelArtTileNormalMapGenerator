@@ -3,6 +3,10 @@ Pixel Art Tile Normal Map Generator is a standalone application designed to conv
 
 It is currently set up to work on two or three tone images, but there are plans for future versions to use more colors in the process.
 
+Designed to be built in Microsoft Visual Studio using .NET Framework 4.7.1.
+
+Pre built executable located under Releases tab.
+
 ## Instructions:
 1. Click "Load Image" and select an image file (Preferably a PNG texture image file of 1024x1024 or less pixels).
 2. Click "Select Background Color" and use the color seleciton tool to select the background color. For best results click "Define Custom Colors >>>" and type in the exact RGB values (0-255) and press OK.
