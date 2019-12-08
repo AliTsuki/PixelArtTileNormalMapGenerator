@@ -13,7 +13,6 @@ namespace PixelArtTileNormalMapGenerator
         public int Width { get; private set; }
         public int Height { get; private set; }
         public Vector2Int Center { get; private set; }
-        public Vector2 Scale { get; private set; }
         public List<Vector2Int> PixelsAlreadyChecked { get; private set; }
         public List<Vector2Int> PixelsToCheck { get; private set; }
 
@@ -27,7 +26,6 @@ namespace PixelArtTileNormalMapGenerator
             this.Width = 0;
             this.Height = 0;
             this.Center = new Vector2Int(0, 0);
-            this.Scale = new Vector2(0f, 0f);
             this.PixelsAlreadyChecked = new List<Vector2Int>();
             this.PixelsToCheck = new List<Vector2Int>();
         }
@@ -120,7 +118,6 @@ namespace PixelArtTileNormalMapGenerator
                 this.Center += pixel;
             }
             this.Center /= allPixels.Count;
-            this.Scale = new Vector2((float)NormalMapGeneratorForm.DefaultNormalMapImageSize / (float)this.Width, (float)NormalMapGeneratorForm.DefaultNormalMapImageSize / (float)this.Height);
         }
 
         /// <summary>

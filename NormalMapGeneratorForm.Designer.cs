@@ -54,6 +54,9 @@
             this.CancelGeneratorButton = new System.Windows.Forms.Button();
             this.SaveButton = new System.Windows.Forms.Button();
             this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
+            this.BackgroundMarginLabel = new System.Windows.Forms.Label();
+            this.SeparatorMarginLabel = new System.Windows.Forms.Label();
+            this.IndividualMarginLabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.OriginalImagePreviewBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.NormalMapImagePreviewBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.BackgroundColorBox)).BeginInit();
@@ -141,10 +144,6 @@
             this.SelectIndividualColorButton.Text = "Select Individual Color";
             this.SelectIndividualColorButton.UseVisualStyleBackColor = true;
             this.SelectIndividualColorButton.Click += new System.EventHandler(this.SelectIndividualColorButton_Click);
-            // 
-            // OpenFileDialog
-            // 
-            this.OpenFileDialog.FileName = "OpenFileDialog";
             // 
             // BackgroundColorBox
             // 
@@ -258,11 +257,41 @@
             this.SaveButton.UseVisualStyleBackColor = true;
             this.SaveButton.Click += new System.EventHandler(this.SaveButton_Click);
             // 
+            // BackgroundMarginLabel
+            // 
+            this.BackgroundMarginLabel.AutoSize = true;
+            this.BackgroundMarginLabel.Location = new System.Drawing.Point(29, 174);
+            this.BackgroundMarginLabel.Name = "BackgroundMarginLabel";
+            this.BackgroundMarginLabel.Size = new System.Drawing.Size(100, 13);
+            this.BackgroundMarginLabel.TabIndex = 25;
+            this.BackgroundMarginLabel.Text = "Background Margin";
+            // 
+            // SeparatorMarginLabel
+            // 
+            this.SeparatorMarginLabel.AutoSize = true;
+            this.SeparatorMarginLabel.Location = new System.Drawing.Point(41, 229);
+            this.SeparatorMarginLabel.Name = "SeparatorMarginLabel";
+            this.SeparatorMarginLabel.Size = new System.Drawing.Size(88, 13);
+            this.SeparatorMarginLabel.TabIndex = 26;
+            this.SeparatorMarginLabel.Text = "Separator Margin";
+            // 
+            // IndividualMarginLabel
+            // 
+            this.IndividualMarginLabel.AutoSize = true;
+            this.IndividualMarginLabel.Location = new System.Drawing.Point(42, 284);
+            this.IndividualMarginLabel.Name = "IndividualMarginLabel";
+            this.IndividualMarginLabel.Size = new System.Drawing.Size(87, 13);
+            this.IndividualMarginLabel.TabIndex = 27;
+            this.IndividualMarginLabel.Text = "Individual Margin";
+            // 
             // NormalMapGeneratorForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1298, 606);
+            this.Controls.Add(this.IndividualMarginLabel);
+            this.Controls.Add(this.SeparatorMarginLabel);
+            this.Controls.Add(this.BackgroundMarginLabel);
             this.Controls.Add(this.SaveButton);
             this.Controls.Add(this.CancelGeneratorButton);
             this.Controls.Add(this.NormalMapGenerationProgressDetailLabel);
@@ -328,6 +357,9 @@
         private System.Windows.Forms.Button CancelGeneratorButton;
         private System.Windows.Forms.Button SaveButton;
         private System.Windows.Forms.SaveFileDialog SaveFileDialog;
+        private System.Windows.Forms.Label BackgroundMarginLabel;
+        private System.Windows.Forms.Label SeparatorMarginLabel;
+        private System.Windows.Forms.Label IndividualMarginLabel;
     }
 }
 

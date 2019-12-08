@@ -14,17 +14,12 @@ namespace PixelArtTileNormalMapGenerator
     /// </summary>
     public partial class NormalMapGeneratorForm : Form
     {
-        // Path
-        public static string DefaultNormalMapImageDirectoryPath = Application.StartupPath + "\\DefaultNormal\\";
-        public static string DefaultNormalMapImageName = "DefaultNormal.png";
         // Bitmaps
         public static Bitmap OriginalImageBitmap;
-        public static Bitmap DefaultNormalMapImageBitmap;
         public static Bitmap NormalMapImageBitmap;
         // Dimensions
         public static int ImageWidth;
         public static int ImageHeight;
-        public static int DefaultNormalMapImageSize = 0;
         // Colors
         public static Color DefaultNormalMapBGColor;
         public static Color BackgroundColor;
@@ -65,17 +60,16 @@ namespace PixelArtTileNormalMapGenerator
         /// </summary>
         private void InitializeValues()
         {
-            this.LoadDefaultNormal();
             OriginalImageBitmap = null;
             this.OriginalImagePreviewBox.Image = OriginalImageBitmap;
             NormalMapImageBitmap = null;
             this.NormalMapImagePreviewBox.Image = NormalMapImageBitmap;
-            DefaultNormalMapBGColor = Color.FromArgb(255, 118, 137, 249);
-            BackgroundColor = Color.FromArgb(255, 240, 202, 163);
+            DefaultNormalMapBGColor = Color.FromArgb(255, 123, 123, 255);
+            BackgroundColor = Color.Black;
             this.BackgroundColorBox.BackColor = BackgroundColor;
-            SeparatorColor = Color.FromArgb(255, 95, 52, 33);
+            SeparatorColor = Color.Black;
             this.SeparatorColorBox.BackColor = SeparatorColor;
-            IndividualColor = Color.FromArgb(255, 199, 119, 82);
+            IndividualColor = Color.Black;
             this.IndividualColorBox.BackColor = IndividualColor;
             BackgroundColorMaxDifference = 10;
             this.BackgroundColorMaxDifferencePicker.Value = BackgroundColorMaxDifference;
@@ -245,30 +239,6 @@ namespace PixelArtTileNormalMapGenerator
             else
             {
                 MessageBox.Show($@"There is no normal map to save!{Environment.NewLine}Please generate a normal map first.");
-            }
-        }
-
-        /// <summary>
-        /// Loads the default normal map texture as bitmap.
-        /// </summary>
-        private void LoadDefaultNormal()
-        {
-            try
-            {
-                if(Directory.Exists(DefaultNormalMapImageDirectoryPath))
-                {
-                    DefaultNormalMapImageBitmap = new Bitmap(DefaultNormalMapImageDirectoryPath + DefaultNormalMapImageName);
-                    DefaultNormalMapImageSize = DefaultNormalMapImageBitmap.Width;
-                }
-                else
-                {
-                    Directory.CreateDirectory(DefaultNormalMapImageDirectoryPath);
-                    throw new Exception("Default Normal Map Image Directory did not exist! Creating Directory now!");
-                }
-            }
-            catch(Exception)
-            {
-                MessageBox.Show($@"Error reading default normal map!{Environment.NewLine}Has the image been moved or deleted?{Environment.NewLine}Please restore the default normal map image to \DefaultNormal\DefaultNormal.png and press the RESET button to continue.");
             }
         }
 

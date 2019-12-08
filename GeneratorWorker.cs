@@ -100,7 +100,7 @@ namespace PixelArtTileNormalMapGenerator
         /// <param name="co">The Convex Object to add to a Tile.</param>
         private static void AddToTile(ConvexObject co)
         {
-            Vector2Int tilePos = co.Center.ConvertToTilePosition();
+            Vector2Int tilePos = co.Center.ToTilePosition();
             if(nmg.Tiles.ContainsKey(tilePos))
             {
                 nmg.Tiles[tilePos].AddObject(co);
@@ -121,7 +121,7 @@ namespace PixelArtTileNormalMapGenerator
         private static bool HasPixelAlreadyBeenAdded(int x, int y)
         {
             Vector2Int xy = new Vector2Int(x, y);
-            Vector2Int tilePos = new Vector2Int(x, y).ConvertToTilePosition();
+            Vector2Int tilePos = new Vector2Int(x, y).ToTilePosition();
             foreach(KeyValuePair<Vector2Int, Tile> tile in nmg.Tiles)
             {
                 if(tilePos.IsWithinDistance(tile.Key, 2))
@@ -298,18 +298,18 @@ namespace PixelArtTileNormalMapGenerator
                     Vector2 uv = new Vector2(difference).ToUVEdge();
                     uvPixelsEdge.Add(new UVPixel(pixel, uv));
                 }
-                foreach(Vector2Int iPixel in co.IndividualPixels)
+                foreach(Vector2Int pixel in co.IndividualPixels)
                 {
                     Vector2 interpolatedUV = new Vector2(0, 0);
                     float sumOfWeights = 0f;
                     foreach(UVPixel uvPixel in uvPixelsEdge)
                     {
-                        float weight = 1f / iPixel.Distance(uvPixel.PixelCoords);
+                        float weight = 1f / Vector2Int.Distance(pixel, uvPixel.PixelCoords);
                         interpolatedUV += uvPixel.UVCoords * weight;
                         sumOfWeights += weight;
                     }
                     interpolatedUV /= sumOfWeights;
-                    uvPixelsInd.Add(new UVPixel(iPixel, interpolatedUV));
+                    uvPixelsInd.Add(new UVPixel(pixel, interpolatedUV));
                 }
             }
             else
@@ -317,53 +317,65 @@ namespace PixelArtTileNormalMapGenerator
                 foreach(Vector2Int pixel in co.IndividualPixels)
                 {
                     Vector2Int difference = pixel - co.Center;
-                    Vector2 uv = new Vector2(difference).ToUVInd(co.Width, co.Height, co.Scale);
+                    Vector2 uv = new Vector2(difference).ToUVInd(co.Width, co.Height);
                     uvPixelsInd.Add(new UVPixel(pixel, uv));
                 }
             }
             List<UVPixel> allUVPixels = uvPixelsEdge.Concat(uvPixelsInd).ToList();
             foreach(UVPixel uvPixel in allUVPixels)
             {
-                nmg.NormalMapImageBitmap.SetPixel(uvPixel.PixelCoords.X, uvPixel.PixelCoords.Y, SampleDefaultUV(co, uvPixel.UVCoords));
+                nmg.NormalMapImageBitmap.SetPixel(uvPixel.PixelCoords.X, uvPixel.PixelCoords.Y, GetNormalMapColor(uvPixel.UVCoords));
             }
         }
 
         /// <summary>
-        /// Gets an averaged color based on the scale for this UV coord using the Default Normal Map image.
+        /// Gets a Normal Map color based on the given UV coordinates.
         /// </summary>
-        /// <param name="co">Convex object from which to get the scale info from.</param>
-        /// <param name="uvCoords">UV coordinates to sample from the Default Normal Map image.</param>
-        /// <returns></returns>
-        private static Color SampleDefaultUV(ConvexObject co, Vector2 uvCoords)
+        /// <param name="uvCoords">UV coordinates to get a normal map color for.</param>
+        /// <returns>Returns the color of the normal map at the given UV coordinates.</returns>
+        private static Color GetNormalMapColor(Vector2 uvCoords)
         {
-            Vector2Int pixel = new Vector2Int(uvCoords * nmg.DefaultNormalMapImageSize);
-            Vector2Int scale = new Vector2Int(co.Scale / 2f);
-            List<Vector4Int> colorsToAverage = new List<Vector4Int>();
-            for(int x = pixel.X - scale.X; x < pixel.X + scale.X; x++)
+            int a = 255;
+            float fr = 255f, fg = 255f, fb = 255f;
+            fr *= uvCoords.X;
+            fg *= 1f - uvCoords.Y;
+            fb *= 1f - MathExt.Clamp(Vector2.Distance(uvCoords, new Vector2(0.5f, 0.5f)) + 0.14f, 0, 1);
+            int r = MathExt.Clamp((int)Math.Floor(fr), 0, 255);
+            int g = MathExt.Clamp((int)Math.Floor(fg), 0, 255);
+            int b = MathExt.Clamp((int)Math.Floor(fb), 0, 255);
+            Color finalColor = Color.FromArgb(a, r, g, b);
+            return finalColor;
+        }
+    }
+
+    /// <summary>
+    /// Math extensions.
+    /// </summary>
+    public static class MathExt
+    {
+        /// <summary>
+        /// Clamps a value between a given minimum and maximum. If value is below minimum, the minimum is returned. If value is above maximum, the maximum is returned.
+        /// Math.Clamp doesn't exist in .NET Framework 4.7.1.
+        /// </summary>
+        /// <typeparam name="T">Comparable type.</typeparam>
+        /// <param name="val">The value to clamp.</param>
+        /// <param name="min">The minimum value.</param>
+        /// <param name="max">The maximum value.</param>
+        /// <returns>Returns an object of the same type given in value representing the value clamped between a minimum and maximum.</returns>
+        public static T Clamp<T>(this T val, T min, T max) where T : IComparable<T>
+        {
+            if(val.CompareTo(min) < 0)
             {
-                for(int y = pixel.Y - scale.Y; y < pixel.Y + scale.Y; y++)
-                {
-                    if(x >= 0 && x < nmg.DefaultNormalMapImageSize && y >= 0 && y < nmg.DefaultNormalMapImageSize)
-                    {
-                        colorsToAverage.Add(new Vector4Int(nmg.DefaultNormalMapImageBitmap.GetPixel(x, y)));
-                    }
-                }
+                return min;
             }
-            Vector4Int avgColor = new Vector4Int(0, 0, 0, 0);
-            foreach(Vector4Int color in colorsToAverage)
+            else if(val.CompareTo(max) > 0)
             {
-                avgColor += color;
-            }
-            if(colorsToAverage.Count > 0)
-            {
-                avgColor /= colorsToAverage.Count;
+                return max;
             }
             else
             {
-                Console.WriteLine($@"CO at center: {co.Center} does not have any colors to average.");
+                return val;
             }
-            Color finalColor = avgColor.ToColor();
-            return finalColor;
         }
     }
 }

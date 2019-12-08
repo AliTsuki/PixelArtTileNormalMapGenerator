@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing;
 
 namespace PixelArtTileNormalMapGenerator
 {
@@ -91,9 +90,9 @@ namespace PixelArtTileNormalMapGenerator
         /// </summary>
         /// <param name="xy">The Vector2Int to check against.</param>
         /// <returns>Returns a float representing the distance between the two Vector2Int.</returns>
-        public float Distance(Vector2Int xy)
+        public static float Distance(Vector2Int first, Vector2Int second)
         {
-            return (float)Math.Sqrt(((this.X - xy.X) * (this.X - xy.X)) + ((this.Y - xy.Y) * (this.Y - xy.Y)));
+            return (float)Math.Sqrt(((first.X - second.X) * (first.X - second.X)) + ((first.Y - second.Y) * (first.Y - second.Y)));
         }
 
         /// <summary>
@@ -115,7 +114,7 @@ namespace PixelArtTileNormalMapGenerator
         /// Divides these coordinates by TileSize to get tile coordinates.
         /// </summary>
         /// <returns>Returns a new Vector2 corresponding to the tile coordinates the original coordinates belong to.</returns>
-        public Vector2Int ConvertToTilePosition()
+        public Vector2Int ToTilePosition()
         {
             return new Vector2Int((int)Math.Floor((float)this.X / (float)Tile.TileSize), (int)Math.Floor((float)this.Y / (float)Tile.TileSize));
         }
@@ -205,6 +204,17 @@ namespace PixelArtTileNormalMapGenerator
         }
 
         /// <summary>
+        /// Gets the distance between two Vector2.
+        /// </summary>
+        /// <param name="first">First Vector2.</param>
+        /// <param name="second">Second Vector2.</param>
+        /// <returns>Returns a float representing the distance between the two Vector2.</returns>
+        public static float Distance(Vector2 first, Vector2 second)
+        {
+            return (float)Math.Sqrt(((first.X - second.X) * (first.X - second.X)) + ((first.Y - second.Y) * (first.Y - second.Y)));
+        }
+
+        /// <summary>
         /// Transforms a given difference from center pixel coordinate into a UV coordinate around the outside edge of UV image. Used for edge pixels.
         /// </summary>
         /// <returns>Returns a Vector2 where both X and Y are between 0 and 1.</returns>
@@ -237,96 +247,14 @@ namespace PixelArtTileNormalMapGenerator
         /// </summary>
         /// <param name="width">The width of the parent CO of this pixel.</param>
         /// <param name="height">The height of the parent CO of this pixel.</param>
-        /// <param name="scale">The scale of the parent CO of this pixel.</param>
         /// <returns>Returns a Vector2 where both X and Y are between 0 and 1.</returns>
-        public Vector2 ToUVInd(int width, int height, Vector2 scale)
+        public Vector2 ToUVInd(int width, int height)
         {
             float tempX = this.X;
             float tempY = this.Y;
-            tempX = (((float)width / 2) + this.X) * scale.X / NormalMapGeneratorForm.DefaultNormalMapImageSize;
-            tempY = (((float)height / 2) + this.Y) * scale.Y / NormalMapGeneratorForm.DefaultNormalMapImageSize;
+            tempX = (((float)width / 2f) + this.X) / (float)width;
+            tempY = (((float)height / 2f) + this.Y) / (float)height;
             return new Vector2(tempX, tempY);
-        }
-    }
-
-
-
-    /// <summary>
-    /// Struct representing 4 int: A, R, G, B. Used for color.
-    /// </summary>
-    public struct Vector4Int
-    {
-        // A, R, G, B
-        public int A { get; private set; }
-        public int R { get; private set; }
-        public int G { get; private set; }
-        public int B { get; private set; }
-
-        /// <summary>
-        /// Constructor using a color.
-        /// </summary>
-        /// <param name="color">The color to get ARGB values from.</param>
-        public Vector4Int(Color color)
-        {
-            this.A = color.A;
-            this.R = color.R;
-            this.G = color.G;
-            this.B = color.B;
-        }
-
-        /// <summary>
-        /// Constructor using four int.
-        /// </summary>
-        /// <param name="a">Alpha value.</param>
-        /// <param name="r">Red value.</param>
-        /// <param name="g">Green value.</param>
-        /// <param name="b">Blue value.</param>
-        public Vector4Int(int a, int r, int g, int b)
-        {
-            this.A = a;
-            this.R = r;
-            this.G = g;
-            this.B = b;
-        }
-
-        /// <summary>
-        /// Adds two Vector4 int.
-        /// </summary>
-        /// <param name="first">First Vector4Int to add.</param>
-        /// <param name="second">Second Vector4Int to add.</param>
-        /// <returns>Returns the sum of the two.</returns>
-        public static Vector4Int operator + (Vector4Int first, Vector4Int second)
-        {
-            return new Vector4Int(first.A + second.A, first.R + second.R, first.G + second.G, first.B + second.B);
-        }
-
-        /// <summary>
-        /// Divides a Vector4Int by a float.
-        /// </summary>
-        /// <param name="argb">Vector4Int to divide from.</param>
-        /// <param name="d">Float amount to divide by.</param>
-        /// <returns>Returns the quotient of the two.</returns>
-        public static Vector4Int operator / (Vector4Int argb, float d)
-        {
-            return new Vector4Int((int)Math.Round((float)argb.A / d), (int)Math.Round((float)argb.R / d), (int)Math.Round((float)argb.G / d), (int)Math.Round((float)argb.B / d));
-        }
-
-        /// <summary>
-        /// Writes ARGB values to string.
-        /// </summary>
-        /// <returns>Returns a string with the ARGB values.</returns>
-        public override string ToString()
-        {
-            return $@"(A:{this.A}, R:{this.R}, G:{this.G}, B:{this.B})";
-        }
-
-        /// <summary>
-        /// Returns a color from the ARGB values of this Vector4Int.
-        /// </summary>
-        /// <returns>Returns a color corresponding to the ARGB values.</returns>
-        public Color ToColor()
-        {
-            return Color.FromArgb(this.A, this.R, this.G, this.B);
         }
     }
 }
