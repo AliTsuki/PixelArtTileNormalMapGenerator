@@ -205,10 +205,10 @@ namespace PixelArtTileNormalMapGenerator
         }
 
         /// <summary>
-        /// Transforms a given difference from center pixel coordinate into a UV coordinate.
+        /// Transforms a given difference from center pixel coordinate into a UV coordinate around the outside edge of UV image. Used for edge pixels.
         /// </summary>
         /// <returns>Returns a Vector2 where both X and Y are between 0 and 1.</returns>
-        public Vector2 ToUV()
+        public Vector2 ToUVEdge()
         {
             float tempX = this.X;
             float tempY = this.Y;
@@ -231,7 +231,25 @@ namespace PixelArtTileNormalMapGenerator
             tempY /= 2f;
             return new Vector2(tempX, tempY);
         }
+
+        /// <summary>
+        /// Transforms a given difference from center pixel coordinate into a UV coordinate. For individual pixels that have no edge pixels.
+        /// </summary>
+        /// <param name="width">The width of the parent CO of this pixel.</param>
+        /// <param name="height">The height of the parent CO of this pixel.</param>
+        /// <param name="scale">The scale of the parent CO of this pixel.</param>
+        /// <returns>Returns a Vector2 where both X and Y are between 0 and 1.</returns>
+        public Vector2 ToUVInd(int width, int height, Vector2 scale)
+        {
+            float tempX = this.X;
+            float tempY = this.Y;
+            tempX = (((float)width / 2) + this.X) * scale.X / NormalMapGeneratorForm.DefaultNormalMapImageSize;
+            tempY = (((float)height / 2) + this.Y) * scale.Y / NormalMapGeneratorForm.DefaultNormalMapImageSize;
+            return new Vector2(tempX, tempY);
+        }
     }
+
+
 
     /// <summary>
     /// Struct representing 4 int: A, R, G, B. Used for color.

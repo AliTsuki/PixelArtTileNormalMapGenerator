@@ -27,8 +27,6 @@ namespace PixelArtTileNormalMapGenerator
         /// <summary>
         /// Creates a normal map from a loaded bitmap image.
         /// </summary>
-        /// <param name="nmgf">Reference to the parent form.</param>
-        /// <param name="cToken">Reference to the cancellation token.</param>
         /// <param name="progressLabelText">Reference to progress label.</param>
         /// <param name="progressBarValue">Reference to progress bar.</param>
         /// <param name="progressLabelDetailText">Reference to progress detail label.</param>
@@ -256,7 +254,7 @@ namespace PixelArtTileNormalMapGenerator
                     {
                         co.AddPixelToCheck(adjacentPixelCoords[i]);
                     }
-                    else if(IsPixelWithinBounds(adjacentPixelCoords[i]) && IsPixelColorWithinColorDistance(adjacentPixelCoords[i], ColorType.Separator))
+                    else if(IsPixelColorWithinColorDistance(adjacentPixelCoords[i], ColorType.Separator))
                     {
                         co.AddNewEdgePixel(adjacentPixelCoords[i]);
                         co.AddPixelAlreadyChecked(adjacentPixelCoords[i]);
@@ -292,24 +290,36 @@ namespace PixelArtTileNormalMapGenerator
         {
             List<UVPixel> uvPixelsEdge = new List<UVPixel>();
             List<UVPixel> uvPixelsInd = new List<UVPixel>();
-            foreach(Vector2Int pixel in co.EdgePixels)
+            if(co.EdgePixels.Count > 0)
             {
-                Vector2Int difference = pixel - co.Center;
-                Vector2 uv = new Vector2(difference).ToUV();
-                uvPixelsEdge.Add(new UVPixel(pixel, uv));
-            }
-            foreach(Vector2Int iPixel in co.IndividualPixels)
-            {
-                Vector2 interpolatedUV = new Vector2(0, 0);
-                float sumOfWeights = 0f;
-                foreach(UVPixel uvPixel in uvPixelsEdge)
+                foreach(Vector2Int pixel in co.EdgePixels)
                 {
-                    float weight = 1f / iPixel.Distance(uvPixel.PixelCoords);
-                    interpolatedUV += uvPixel.UVCoords * weight;
-                    sumOfWeights += weight;
+                    Vector2Int difference = pixel - co.Center;
+                    Vector2 uv = new Vector2(difference).ToUVEdge();
+                    uvPixelsEdge.Add(new UVPixel(pixel, uv));
                 }
-                interpolatedUV /= sumOfWeights;
-                uvPixelsInd.Add(new UVPixel(iPixel, interpolatedUV));
+                foreach(Vector2Int iPixel in co.IndividualPixels)
+                {
+                    Vector2 interpolatedUV = new Vector2(0, 0);
+                    float sumOfWeights = 0f;
+                    foreach(UVPixel uvPixel in uvPixelsEdge)
+                    {
+                        float weight = 1f / iPixel.Distance(uvPixel.PixelCoords);
+                        interpolatedUV += uvPixel.UVCoords * weight;
+                        sumOfWeights += weight;
+                    }
+                    interpolatedUV /= sumOfWeights;
+                    uvPixelsInd.Add(new UVPixel(iPixel, interpolatedUV));
+                }
+            }
+            else
+            {
+                foreach(Vector2Int pixel in co.IndividualPixels)
+                {
+                    Vector2Int difference = pixel - co.Center;
+                    Vector2 uv = new Vector2(difference).ToUVInd(co.Width, co.Height, co.Scale);
+                    uvPixelsInd.Add(new UVPixel(pixel, uv));
+                }
             }
             List<UVPixel> allUVPixels = uvPixelsEdge.Concat(uvPixelsInd).ToList();
             foreach(UVPixel uvPixel in allUVPixels)
@@ -327,7 +337,7 @@ namespace PixelArtTileNormalMapGenerator
         private static Color SampleDefaultUV(ConvexObject co, Vector2 uvCoords)
         {
             Vector2Int pixel = new Vector2Int(uvCoords * nmg.DefaultNormalMapImageSize);
-            Vector2Int scale = new Vector2Int(co.ScaleVsDefault / 2f);
+            Vector2Int scale = new Vector2Int(co.Scale / 2f);
             List<Vector4Int> colorsToAverage = new List<Vector4Int>();
             for(int x = pixel.X - scale.X; x < pixel.X + scale.X; x++)
             {
